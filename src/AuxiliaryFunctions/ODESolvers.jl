@@ -18,6 +18,7 @@ mutable struct IMEX_RK
     
 end
 
+
 function ARK4_3_7L_2_SA1()
 
     #Implicit method:
@@ -635,6 +636,177 @@ function RK_Coefficients(RKMethod::String)
 
     return RK
     
+end
+
+mutable struct RoW
+
+    name        ::String
+    Aij         ::Matrix{Float64}
+    alphai      ::Vector{Float64}
+    bi          ::Vector{Float64}
+    bihat       ::Vector{Float64}
+    Gij         ::Matrix{Float64}
+    gammai      ::Vector{Float64}
+    stages      ::Int64
+    order       ::Int64
+    SA          ::Bool
+    const_diag  ::Bool  #true if all stages have same diagonal coefficient, except the last one if it is not SA
+    RoW()       = new()
+
+end
+
+function RoW_Coefficients(RoWMethod::String)
+
+    RoWMETHOD        = uppercase(RoWMethod)
+    ROW              = RoW()
+    ROW.name         = RoWMETHOD
+    ROW.SA           = false
+    ROW.const_diag   = false
+
+    if RoWMETHOD=="RS4_1"
+        Am      = zeros(6, 6)
+        Dm      = zeros(6, 6)
+        aux     = [ 0.1453095851778752e+00 -0.1663308815707106e+00
+                   -0.8363751185795163e-01 -0.1955281376483649e+00
+                   0.4653797888836254e+00 0.0000000000000000e+00
+                   0.1221352440293317e+00 0.9328584649444096e-01
+                   0.4710638453536991e-01 -0.7516720551667615e-01
+                   0.4675397418727582e+00 -0.6083476132133512e+00
+                   -0.4105609592117824e+00 -0.1055334005738567e+01
+                   0.1129915687702315e+01 0.1642720876210548e+01
+                   -0.7428082669587672e+00 0.4253615231250318e+00
+                   0.7795279881005905e+00 -0.1228983234763060e+01
+                   0.4218081486710729e+00 0.6244753912169905e-01
+                   -0.5620374521933949e+00 0.8093490724906463e+00
+                   0.1148431592100041e+01 -0.1933999465400508e+01
+                   -0.4385302824054497e+00 0.6699042770344917e+00
+                   0.3574327178152976e+00 0.5199114999181671e-01  ]
+        Am      = zeros(6,6)
+        Dm      = zeros(6,6)
+        Dm[1,1] = 0.25
+        kk      = 1
+        gammai  = zeros(size(Am, 1))
+        for ii=2:6
+            for jj=1:ii-1
+                Am[ii,jj]   = aux[kk,1]
+                Dm[ii,jj]   = aux[kk,2]
+                kk          += 1
+            end
+            Dm[ii,ii]   = 0.25
+            sumgammaij  = 0.0
+            for jj=1:ii-1
+                sumgammaij  += Dm[ii,jj]
+            end
+            gammai[ii]  =  sumgammaij
+        end
+        ROW.gammai      = gammai
+        ROW.Aij         = Am
+        ROW.Gij         = Dm
+        ROW.bi          = [ 0.4655534292633723e-01, 0.2007373275547205e+00, 0.2958133765427481e+00,
+                       0.1106008413222938e+00, 0.1962931116539005e+00, 0.1500000000000000e+00 ]
+        ROW.order       = 4
+        ROW.alphai      = sum(Am,dims=2)
+        ROW.const_diag  = true
+        ROW.stages      = size(Am, 1)
+        return ROW
+        elseif RoWMETHOD=="ROS34PRW"
+        Am          = zeros(4, 4)
+        Dm          = zeros(4, 4)
+        Dm[1,1]     = 4.3586652150845900e-01
+        auxA        = [ 8.7173304301691801e-01
+                        1.4722022879435914e+00
+                        -3.1840250568090289e-01
+                        8.1505192016694938e-01
+                        5.0000000000000000e-01
+                        -3.1505192016694938e-01 ]
+        auxD        = [ -8.7173304301691801e-01
+                        -1.2855347382089872e+00
+                        5.0507005541550687e-01
+                        -4.8201449182864348e-01
+                        2.1793326075422950e-01
+                        -1.7178529043404503e-01 ]
+        ROW.bi      = [ 3.3303742833830591e-01
+                        7.1793326075422947e-01
+                        -4.8683721060099439e-01
+                        4.3586652150845900e-01]
+        ROW.bihat   = [ 2.5000000000000000e-01
+                        7.4276119608319180e-01
+                        -3.1472922970066219e-01
+                        3.2196803361747034e-01 ]
+        kk          = 1
+        gammai      = zeros(size(Am, 1))
+        for ii=2:4
+            for jj=1:ii-1
+                Am[ii,jj]   = auxA[kk]
+                Dm[ii,jj]   = auxD[kk]
+                kk          += 1
+            end
+                Dm[ii,ii]   = Dm[1,1]
+            sumgammaij  = 0.0
+            for jj=1:ii-1
+                sumgammaij  += Dm[ii,jj]
+            end
+            gammai[ii]  =  sumgammaij
+        end
+
+        ROW.gammai      = gammai
+        ROW.Aij         = Am
+        ROW.Gij         = Dm
+        ROW.order       = 3
+        ROW.alphai      = sum(Am,dims=2)
+        ROW.stages      = size(Am, 1)
+        ROW.const_diag  = true
+        ROW.SA          = true
+        return ROW
+        elseif RoWMETHOD=="ROSI2PW"
+        Am                      = zeros(4,4)
+        Bm                      = zeros(4,4)
+        gamma                   = 4.3586652150845900e-1
+        Am[2,1]                 = 8.7173304301691801e-1
+        Am[3,1]                 = -7.9937335839852708e-1
+        Am[3,2]                 = -7.9937335839852708e-1
+        Am[4,1]                 = 7.0849664917601007e-1
+        Am[4,2]                 = 3.1746327955312481e-1
+        Am[4,3]                 = -2.5959928729134892e-2
+        Dm[2,1]                 = -8.7173304301691801e-1
+        Dm[3,1]                 = 3.0647867418622479
+        Dm[3,2]                 = 3.0647867418622479
+        Dm[4,1]                 = -1.0424832458800504e-1
+        Dm[4,2]                 = -3.1746327955312481e-1
+        Dm[4,3]                 = -1.4154917367329144e-2
+        ROW.bi                  = [ 6.0424832458800504e-1,
+                                   3.6210810811598324e-32,
+                                   -4.0114846096464034e-2,
+                                   4.3586652150845900e-1 ]
+        ROW.bihat               = [ 4.4315753191688778e-1
+                                   4.4315753191688778e-1
+                                   0.0
+                                   1.1368493616622447e-1 ]
+        ss                      = 4
+        gammai                  = zeros(ss)
+        for ii=1:ss
+            Dm[ii,ii]           =  gamma
+            sumgammaij          =  0.0
+            for jj=1:ii-1
+                sumgammaij      += Dm[ii,jj]
+            end
+            gammai[ii] = sumgammaij
+        end
+
+
+        ROW.gammai      = gammai
+        ROW.Aij         = Am
+        ROW.Gij         = Dm
+        ROW.alphai      = sum(Am,dims=2)
+        ROW.stages      = size(Am, 1)
+        ROW.order       = 3
+        ROW.const_diag  = true
+        ROW.SA          = true
+        return ROW
+    else
+        error("Unknown RoW method=$(RoWMethod)")
+    end
+
 end
 
 #Plot stability region for ydot = g(y):

@@ -1,7 +1,7 @@
 include("test_CompressibleFlow.jl")
 
 function TriplePoint(hp0::Float64, FesOrder::Int;
-    tf::Float64=5.0, RKMethod::String="Ascher3",
+    tf::Float64=5.0, TMSName::String="RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",
     epsilon::Float64=1e-3, nu::Float64=0e-3, beta::Float64=0.0, kappa_rho_cv::Float64=0e-6, 
     delta0::Float64=epsilon,
     #
@@ -70,7 +70,9 @@ function TriplePoint(hp0::Float64, FesOrder::Int;
     solver.MeshFile         = MeshFile
     solver.nBounds          = 4
     solver.FesOrder         = FesOrder
+    solver.TMSName          = TMSName
     solver.RKMethod         = RKMethod
+    solver.RoWMethod        = RoWMethod
     solver.Deltat0          = Deltat0
     solver.tf               = tf
     solver.AMA_MaxIter      = AMA_MaxIter
@@ -196,7 +198,8 @@ function TriplePoint(hp0::Float64, FesOrder::Int;
             ConvFlag            = LIRKHyp_Step_Post!(solver)
         else
 #             ConvFlag            = LIRKHyp_Step_Pre!(solver)
-            ConvFlag            = IRK_Step!(solver)
+#             ConvFlag            = IRK_Step!(solver)
+              ConvFlag            = RoW_Step!(solver)
         end
         if ConvFlag<=0
             break

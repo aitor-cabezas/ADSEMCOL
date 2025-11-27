@@ -1,13 +1,13 @@
 include("test_CompressibleFlow.jl")
 
-function SmoothVortex(hp::Float64, FesOrder::Int, tfv::Array{Float64,1};
-    RKMethod::String="Ascher3", 
+function SmoothVortex(hp::Float64, FesOrder::Int, tfv::Array{Float64,1}; TMSName::String= "RoW",
+    RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",
     epsilon::Float64=0.0, nu::Float64=0e-6, beta::Float64=0.0, kappa_rho_cv::Float64=0e-6,
     PlotVars::Vector{String}=String[], PlotCode::Vector{String}=fill("nodes", length(PlotVars)), 
     SaveFig::Bool=false, wFig::Float64=9.50, hFig::Float64=6.50, 
     mFig::Int=max(1,length(PlotCode)), nFig::Int=Int(ceil(length(PlotCode)/mFig)), Nt_SaveFig::Int=typemax(Int), cmap::String="jet",
-    SC::Int=0, CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0, Deltat0::Float64=1e-3,
-    AMA_MaxIter::Int=200, TolS::Float64=1e-3, TolT::Float64=1e-3, 
+    SC::Int=0, CSS::Float64=0.1, CDC::Float64=5.0, +CFLa::Float64=1.0, Deltat0::Float64=1e-4,
+    AMA_MaxIter::Int=200, TolS::Float64=1e-5, TolT::Float64=1e-3,
     AMA_SizeOrder::Int=FesOrder, AMA_AnisoOrder::Int=2, AMA_ProjN::Int=1, AMA_ProjOrder::Int=0,
     SpaceAdapt::Bool=true, TimeAdapt::Bool=true,
     SaveRes::Bool=false, Nt_SaveRes::Int=typemax(Int), Deltat_SaveRes::Float64=0.01)
@@ -85,7 +85,9 @@ function SmoothVortex(hp::Float64, FesOrder::Int, tfv::Array{Float64,1};
     solver.MeshFile         = MeshFile
     solver.nBounds          = 4
     solver.FesOrder         = FesOrder
+    solver.TMSName          = TMSName
     solver.RKMethod         = RKMethod
+    solver.RoWMethod        = RoWMethod
     solver.Deltat0          = Deltat0
     solver.tf               = tfv[length(tfv)]
     solver.AMA_MaxIter      = AMA_MaxIter
@@ -230,9 +232,12 @@ function SmoothVortex(hp::Float64, FesOrder::Int, tfv::Array{Float64,1};
             ct_SaveRes  = 0
             nb_SaveRes  += 1
         end
+
         return
         
     end
+
+
     SaveSol()
     
     #-----------------------------------------------------------------------------
@@ -243,7 +248,8 @@ function SmoothVortex(hp::Float64, FesOrder::Int, tfv::Array{Float64,1};
     
     while solver.t<tfv[length(tfv)]
     
-        ConvFlag            = LIRKHyp_Step!(solver)
+#         ConvFlag            = LIRKHyp_Step!(solver)
+        ConvFlag            = RoW_Step!(solver)
         
         if ConvFlag<=0
             break
@@ -262,8 +268,13 @@ function SmoothVortex(hp::Float64, FesOrder::Int, tfv::Array{Float64,1};
         errL2L2             = errL2L2_(solver.t-solver.Deltat, errL2L2, solver.t, errLq)
         etaL2L2             = errL2L2_(solver.t-solver.Deltat, etaL2L2, solver.t, solver.etaS+solver.etaT)
         
-        println("hmean=", sprintf1("%.2e", hmean), 
-                ", e_L2L2=", sprintf1("%.2e", errL2L2), 
+#         println("hmean=", sprintf1("%.2e", hmean),
+#                 ", e_L2L2=", sprintf1("%.2e", errL2L2),
+#                 ", etaL2L2=", sprintf1("%.2e", etaL2L2))
+
+        println("hmean=", sprintf1("%.2e", hmean),
+                ", Deltat_mean=", sprintf1("%.2e", solver.t/solver.Nt),
+                ", e_L2L2=", sprintf1("%.2e", errL2L2),
                 ", etaL2L2=", sprintf1("%.2e", etaL2L2))
         
         SaveSol()
@@ -279,7 +290,7 @@ function SmoothVortex(hp::Float64, FesOrder::Int, tfv::Array{Float64,1};
 #             "errL2L2", errL2L2, "etaL2L2", etaL2L2 )
 #     end
     
-    return solver
+    return
     
 end
 
