@@ -107,7 +107,9 @@ Base.@kwdef mutable struct Oregonator <: OregonatorModel
     epsilonp        ::Float64           = 1/720
     q               ::Float64           = 0.002
     Du              ::Float64           = 1.0
+    Dv              ::Float64           = 0.0
     Dw              ::Float64           = 1.12
+    phi             ::Float64           = 0.0025
     nSpecies        ::Int64             = 3
     CSS             ::Float64           = 0.1   #Subgrid stabilization
     CW              ::Float64           = 50.0  #Boundary penalty (50.0-200.0 for IIPG)
@@ -506,36 +508,27 @@ function FluxSource!(model::GasModel, _qp::TrIntVars, ComputeJ::Bool)
 end
 
 #Function to evaluate flux and source terms at quadrature nodes:
-function FluxSource!(model::OregonatorModel, _qp::TrIntVars, ComputeJ::Bool)
+function FluxSource!(model::Oregonator, _qp::TrIntVars, ComputeJ::Bool)
 
     t               = _qp.t
     x               = _qp.x
     u               = _qp.u
     du              = _qp.gradu
     duB             = _qp.graduB
-
+    
     #Compute dependent variables:
     udep            = DepVars(model, t, x, u, model.DepVars)
-
-    #Terms due to pressures and convection:
-    HyperbolicFlux!(model, u, udep, ComputeJ, _qp.f, _qp.df_du)
-
+    
+    
+    #Terms due to diffusion flux
+    OregonatorFlux!(model, du, _qp.f, _qp.df_dgradu, ComputeJ)
+    
     #Viscosities:
     epsilon         = @mlv udep[$DepVarIndex(model,"epsilon")][1]
     nu              = @mlv udep[$DepVarIndex(model,"nu")][1]
     beta            = @mlv udep[$DepVarIndex(model,"beta")][1]
     kappa_rho_cv    = @mlv udep[$DepVarIndex(model,"kappa_rho_cv")][1]
-
-    #Terms due to viscous flux:
-    ViscousFlux!(model, nu, beta, u, udep, du,
-                 ComputeJ, _qp.f, _qp.df_du, _qp.df_dgradu)
-    HeatFlux!(model, kappa_rho_cv, u, udep, du,
-              ComputeJ, _qp.f, _qp.df_du, _qp.df_dgradu)
-    #     BrennerMassFlux!(model, epsilon, u, udep, du,
-    #         ComputeJ, _qp.f, _qp.df_du, _qp.df_dgradu)
-    MassDiffusionFlux!(model, u, udep, du,
-                       ComputeJ, _qp.f, _qp.df_du, _qp.df_dgradu)
-
+    
     #Monolithic diffusion:
     epsilonFlux!(model, epsilon, du, ComputeJ, _qp.f, _qp.df_dgradu)
 
@@ -549,7 +542,8 @@ function FluxSource!(model::OregonatorModel, _qp::TrIntVars, ComputeJ::Bool)
     epsilonFlux!(model, tau, duB, ComputeJ, _qp.fB, _qp.dfB_dgraduB)
 
     #Source terms:
-    source!(model, t, x, u, udep, ComputeJ, _qp.Q, _qp.dQ_du)
+    
+    source!(model, u, _qp.Q, _qp.dQ_du, ComputeJ)
 
     #CFL number:
     hp_min              = _hmin(_qp.Integ2D.mesh)./_qp.FesOrder * ones(1, _qp.nqp)
