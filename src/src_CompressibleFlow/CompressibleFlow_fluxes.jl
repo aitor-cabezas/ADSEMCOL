@@ -514,6 +514,31 @@ function TestFlux!(model::GasIdeal,
     
 end
 
+function OregonatorFlux!(model::Oregonator,du::Matrix{Matrix{Float64}},flux::Matrix{Matrix{Float64}},dflux_du::Array{Matrix{Float64},3},dflux_dgradu::Array{Matrix{Float64},4},ComputeJ::Bool)
+
+    Du              =   model.Du
+    Dv              =   model.Dv
+    epsilon         =   model.epsilon
+    epsilonp        =   model.epsilonp
+
+    ## Diffusion Flux
+
+    for alpha = 1:nSpecies, i= 1:2
+
+        flux[alpha,i]   =   -(Du/epsilon)*du[alpha,i]
+
+    end
+
+    ## Divergence of the flux
+
+
+
+
+
+
+
+end
+
 #Function that evaluates the source term:
 function source!(model::GasIdeal, t::Float64, x::Vector{MFloat}, 
     u::Vector{MFloat}, udep::Vector{Vector{MFloat}}, 

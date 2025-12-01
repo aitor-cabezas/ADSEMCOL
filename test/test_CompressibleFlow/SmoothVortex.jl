@@ -6,7 +6,7 @@ function SmoothVortex(hp::Float64, FesOrder::Int, tfv::Array{Float64,1}; TMSName
     PlotVars::Vector{String}=String[], PlotCode::Vector{String}=fill("nodes", length(PlotVars)), 
     SaveFig::Bool=false, wFig::Float64=9.50, hFig::Float64=6.50, 
     mFig::Int=max(1,length(PlotCode)), nFig::Int=Int(ceil(length(PlotCode)/mFig)), Nt_SaveFig::Int=typemax(Int), cmap::String="jet",
-    SC::Int=0, CSS::Float64=0.1, CDC::Float64=5.0, +CFLa::Float64=1.0, Deltat0::Float64=1e-4,
+    SC::Int=0, CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0, Deltat0::Float64=1e-4,
     AMA_MaxIter::Int=200, TolS::Float64=1e-5, TolT::Float64=1e-3,
     AMA_SizeOrder::Int=FesOrder, AMA_AnisoOrder::Int=2, AMA_ProjN::Int=1, AMA_ProjOrder::Int=0,
     SpaceAdapt::Bool=true, TimeAdapt::Bool=true,
