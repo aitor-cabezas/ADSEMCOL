@@ -25,13 +25,17 @@ Base.@kwdef mutable struct Oregonator <: OregonatorModel
 
 end
 
+mutable struct Neumann <: BoundConds
+    q               ::FWt11     #must return diffusive flux [q=-epsilon*du/dn]
+end
+
 
 
 #-------------------------------------------------------------------------------
 #MANDATORY FUNCTIONS:
 
 include("../src_ConvectionDiffusionReaction/ConvectionDiffusionReaction_fluxes.jl")
-# include("../src_ConvectionDiffusionReaction/ConvectionDiffusionReaction_BC.jl")
+include("../src_ConvectionDiffusionReaction/ConvectionDiffusionReaction_BC.jl")
 
 #Compute normalization factors from solution. Mass matrix has already been computed.
 

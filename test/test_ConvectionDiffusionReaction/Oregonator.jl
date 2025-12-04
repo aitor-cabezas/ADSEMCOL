@@ -94,7 +94,7 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
         @tturbo @. v_in  +=  u_in
         @tturbo @. w_in  +=  (phi+f*v_in)/(u_in+q)
         
-        u_in      = reshape(u_in,   size(x[1]))
+        u_in      = reshape(u_in, size(x[1]))
         v_in      = reshape(v_in, size(x[1]))
         w_in      = reshape(w_in, size(x[1]))
         
