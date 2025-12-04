@@ -64,7 +64,7 @@ end
 #Add monolithic diffusion:
 #   f_Ij = -tau d_j u_I
 
-function epsilonFlux!(model::GasModel, tau::MFloat, duB::Matrix{MFloat}, 
+function epsilonFlux!(model::Oregonator, tau::MFloat, duB::Matrix{MFloat}, 
     ComputeJ::Bool, 
     fB::Matrix{MFloat}, dfB_dduB::Array{MFloat,4};
     IIv::Vector{Int}=Vector{Int}(1:model.nVars)) where MFloat<:Matrix{Float64}

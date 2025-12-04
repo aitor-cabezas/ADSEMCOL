@@ -31,16 +31,14 @@ end
 #MANDATORY FUNCTIONS:
 
 include("../src_ConvectionDiffusionReaction/ConvectionDiffusionReaction_fluxes.jl")
-include("../src_ConvectionDiffusionReaction/ConvectionDiffusionReaction_BC.jl")
+# include("../src_ConvectionDiffusionReaction/ConvectionDiffusionReaction_BC.jl")
 
 #Compute normalization factors from solution. Mass matrix has already been computed.
 
 function nFactsCompute!(solver::SolverData{<:OregonatorModel})
 
-    nVars           = solver.nVars
-
     #Normalization factors:
-    solver.nFacts[nVars]        .= 1.0
+    solver.nFacts        .= 1.0
 
     return
 

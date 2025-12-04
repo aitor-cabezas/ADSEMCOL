@@ -1,6 +1,6 @@
 include("test_ConvectionDiffusionReaction.jl")
 
-function Oregonator(;hp::Float64=1.0, FesOrder::Int=5, tf::Float64=1.0, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",PlotVars::Vector{String}=String[], PlotCode::Vector{String}=fill("nodes", length(PlotVars)),SaveFig::Bool=false, wFig::Float64=9.50, hFig::Float64=6.50, mFig::Int=max(1,length(PlotCode)), nFig::Int=Int(ceil(length(PlotCode)/mFig)), Nt_SaveFig::Int=typemax(Int), cmap::String="jet",SC::Int=0, CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0, phi::Float64=0.0025,epsilon::Float64= 1/8,epsilonp::Float64= 1/720,q               ::Float64 = 0.002,f::Float64=1.8,A::Float64=0.5,sigma::Float64=5.0,  Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3,AMA_SizeOrder::Int=FesOrder,AMA_AnisoOrder::Int=2,AMA_ProjN::Int=1,AMA_ProjOrder::Int=0,SpaceAdapt::Bool=true, TimeAdapt::Bool=true,SaveRes::Bool=false, Nt_SaveRes::Int=typemax(Int), Deltat_SaveRes::Float64=0.01)
+function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",PlotVars::Vector{String}=String[], PlotCode::Vector{String}=fill("nodes", length(PlotVars)),SaveFig::Bool=false, wFig::Float64=9.50, hFig::Float64=6.50, mFig::Int=max(1,length(PlotCode)), nFig::Int=Int(ceil(length(PlotCode)/mFig)), Nt_SaveFig::Int=typemax(Int), cmap::String="jet",SC::Int=0, CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0, phi::Float64=0.0025,epsilon::Float64= 1/8,epsilonp::Float64= 1/720,q               ::Float64 = 0.002,f::Float64=1.8,A::Float64=0.5,sigma::Float64=5.0,  Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3,AMA_SizeOrder::Int=FesOrder,AMA_AnisoOrder::Int=2,AMA_ProjN::Int=1,AMA_ProjOrder::Int=0,SpaceAdapt::Bool=true, TimeAdapt::Bool=true,SaveRes::Bool=false, Nt_SaveRes::Int=typemax(Int), Deltat_SaveRes::Float64=0.01)
     
     
     #---------------------------------------------------------------------
@@ -56,7 +56,10 @@ function Oregonator(;hp::Float64=1.0, FesOrder::Int=5, tf::Float64=1.0, TMSName:
         
         xc                  =   (x2-x1)/2
         yc                  =   (y2-y1)/2
-        @tturbo @.  rxy     =   sqrt((x[1]-xc)^2 + (x[2]-yc)^2)
+        xr                  =   @view x[1][:]
+        yr                  =   @view x[2][:]
+        rxy                 =   similar(xr) 
+        @tturbo @. rxy      =   sqrt((xr-xc)^2 + (yr-yc)^2)
         
         #Anderson's method to obtain the equilibrium solution u*
         
@@ -65,29 +68,35 @@ function Oregonator(;hp::Float64=1.0, FesOrder::Int=5, tf::Float64=1.0, TMSName:
             diag_value    = 1 - 2*u0 + (((f*q-phi-2*f*u0)*(u0+q)-(q*phi+f*q*u0-phi*u0-f*u0*u0))/
                             ((u0+q)*(u0+q)))
                             
-            diagJ0 = spdiagm(0 => fill(diag_value, length(x[1])))
-            return diagJ0,u0v
+#             diagJ0 = spdiagm(0 => fill(diag_value, length(x[1])))
+            return diag_value,u0v
         end
         
-        J0_diag,u0v   =   J0(0.1)
+        diagJ0_value,u0v   =   J0(0.1)
         
         function gfun!(u::Vector{Float64},g::Vector{Float64}) #Preconditioned residual computation
-            
+            R              = zeros(length(u0v))
             @tturbo @. R   = u*(1-u) - ((phi+f*u)/(u+q))*(u-q) #Residual
-            g              .= J0_diag.\R  #Preconditioned Residual
+            g              .= diagJ0_value.\R  #Preconditioned Residual
             return 1 #flag
             
         end
         
-        ueq, ch     = Anderson(FW_NLS((u,g)->gfun!(u,g)), u0v, memory=50, AbsTolG=1e-12, MaxIter=iter, Display="notify") #FW_NLS is a wrapper that takes the function (y,g)->gfun!(y,g) and adapts the interface that Anderson's method needs for working as a NonLinear Solver. In this way, Anderson doesn't need how you compute the residual exactly, only recieves and object(FW_NLS) that responds with whatever it needs.  
+        ueq, ch     = Anderson(FW_NLS((u,g)->gfun!(u,g)), u0v, memory=50, AbsTolG=1e-12, MaxIter=100, Display="notify") #FW_NLS is a wrapper that takes the function (y,g)->gfun!(y,g) and adapts the interface that Anderson's method needs for working as a NonLinear Solver. In this way, Anderson doesn't need how you compute the residual exactly, only recieves and object(FW_NLS) that responds with whatever it needs.  
         #Display = "none", "iter", "final", "notify"
         if ch.flag<=0 #ch=convergence history
             @warn "Nonlinear solver did not converge"
         end
-        
+        u_in             =   zeros(length(x[1]))
+        v_in             =   zeros(length(x[1]))
+        w_in             =   zeros(length(x[1]))
         @tturbo @. u_in  +=  ueq + A*exp(-(rxy*rxy)/(2*sigma*sigma))
         @tturbo @. v_in  +=  u_in
         @tturbo @. w_in  +=  (phi+f*v_in)/(u_in+q)
+        
+        u_in      = reshape(u_in,   size(x[1]))
+        v_in      = reshape(v_in, size(x[1]))
+        w_in      = reshape(w_in, size(x[1]))
         
         return [u_in,v_in,w_in]
         
