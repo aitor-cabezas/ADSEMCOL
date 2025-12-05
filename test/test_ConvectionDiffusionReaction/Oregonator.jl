@@ -50,6 +50,17 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
     solver.SpaceAdapt       = SpaceAdapt
     solver.TimeAdapt        = TimeAdapt
     
+    #Boundary conditions (q_alpha = 0 for the whole boundary):
+    function q_alpha(t::Float64,x::Vector{Matrix{Float64}})
+        
+        q   = [zero.(x[1]), zero.(x[1]), zero.(x[1])]
+        
+        return q
+        
+    end
+    
+    BC_Neumann        = Neumann(FWt11((t,x)->q_alpha(t,x)))
+    
     #Set initial condition:
     
     function u0_Oregonator(x::Vector{Matrix{Float64}})
@@ -67,8 +78,6 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
             u0v           = fill(u0,length(x[1]))
             diag_value    = 1 - 2*u0 + (((f*q-phi-2*f*u0)*(u0+q)-(q*phi+f*q*u0-phi*u0-f*u0*u0))/
                             ((u0+q)*(u0+q)))
-                            
-#             diagJ0 = spdiagm(0 => fill(diag_value, length(x[1])))
             return diag_value,u0v
         end
         
@@ -102,21 +111,33 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
         
     end
     
-    
     solver.u0fun        = FW11((x) -> u0_Oregonator(x)) 
     
+    #Set boundary conditions:
+    solver.BC           = [BCW(BC_Neumann), BCW(BC_Neumann), BCW(BC_Neumann), BCW(BC_Neumann)]
     
     #-----------------------------------------------------------------------------
     #INITIAL CONDITION:
     
     #Compute initial condition:
     ConvFlag            = LIRKHyp_InitialCondition!(solver)
-    CheckJacobian(solver, Plot_dQ_du=true, Plot_df_dgradu=true)
+#     CheckJacobian(solver, Plot_dQ_du=true, Plot_df_dgradu=true)
 #     BC_CheckJacobian(solver, 4, Plot_df_du=true, Plot_df_dgradu=true)
-    return
+#     return
     
+    #-----------------------------------------------------------------------------
+    #MARCH IN TIME:
     
+    while solver.t<tf
     
-    
+        ConvFlag            = LIRKHyp_Step!(solver)
+        if ConvFlag<=0
+            break
+        end
+        
+#        PlotSol()
+#         SaveSol()
+        
+    end
     
 end
