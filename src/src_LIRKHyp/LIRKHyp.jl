@@ -197,16 +197,21 @@ mutable struct SolverData{ConstModel<:ConstModels}
     #Time integration method:
     t               :: Float64
     Nt              :: Int
-    RKMethod        :: String 
     Deltat0         :: Float64
     Deltat          :: Float64  
     CFL             :: Float64  
     tf              :: Float64  
-    TimeAdapt       :: Bool   
+    TimeAdapt       :: Bool
+    TMSName         :: String       #Time-Marching Scheme Name
+    #RK Methods
+    RKMethod        :: String
     RK              :: IMEX_RK      #Structure with RK coefficients
     f_RK            :: Matrix{Float64}
     Ju_RK           :: Matrix{Float64}
-    fNStab_RK       :: Matrix{Float64}
+    #Rosenbrock-Wanner Methods
+    RoWMethod       :: String       #Structure with RoW coefficients
+    RoW             :: RoW
+    ki_RoW          :: Matrix{Float64}
     
     #Matrices/vectors:
     Integ2D         :: TrInt
@@ -217,6 +222,7 @@ mutable struct SolverData{ConstModel<:ConstModels}
     MII_LS          :: LinearSystem1
     bv              :: Vector{Float64}
     b               :: Vector{VectorView{Float64}}
+    fv              :: AbstractVector{Float64}
     Mm              :: SparseMatrixCSC{Float64,Int}     #Full mass matrix
     Jm              :: SparseMatrixCSC{Float64,Int}
     Jm_pinv         :: Matrix{Vector{Int}}              #Matrix nVars*nVars with vectors for fast assembly
@@ -319,7 +325,9 @@ mutable struct SolverDataSave{ConstModel<:ConstModels}
     #Time integration method:
     t               :: Float64
     Nt              :: Int
+    TMSName         :: String       #Time-Marching Scheme Name
     RKMethod        :: String 
+    RoWMethod       :: String
     Deltat0         :: Float64
     Deltat          :: Float64  
     CFL             :: Float64  
