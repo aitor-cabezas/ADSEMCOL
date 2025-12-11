@@ -97,6 +97,41 @@ function PlotContour(solver::SolverData, vble::String;
     
 end
 
+
+function PlotContourOregonator(solver::Union{SolverDataSave, SolverData}, model::ConstModels,
+vble::String; cmap::String="jet", symmetry::String="none",z1::Float64=NaN, z2::Float64=NaN, Nz::Int=100, delta::Float64=1e-10)
+
+    uNodes = SolutionAtNodes(solver.u, solver.fes)
+
+    v_plot = nothing
+    if vble == "u"
+        v_plot = collect(vec(uNodes[1]))
+    elseif vble == "v"
+        v_plot = collect(vec(uNodes[2]))
+    elseif vble == "w"
+        v_plot = collect(vec(uNodes[3]))
+    else
+        error("Unknown variable $vble")
+    end
+
+    NC = solver.fes.PSpace.NodesCoords
+    xm = [ view(NC,:,1), view(NC,:,2) ]
+
+    if isnan(z1)
+        z1 = minimum(v_plot) - delta
+    end
+    if isnan(z2)
+        z2 = maximum(v_plot) + delta
+    end
+
+    PlotContour(v_plot, solver.fes.PSpace, cmap=cmap, symmetry=symmetry, zv=collect(range(z1,z2,length=Nz)))
+
+    return v_plot
+end
+
+
+
+
 function SolutionAtNodes(solver::Union{SolverDataSave, SolverData}, model::ConstModels,
     vble::String)
     

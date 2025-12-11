@@ -1,6 +1,6 @@
 include("test_ConvectionDiffusionReaction.jl")
 
-function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",PlotVars::Vector{String}=String[], PlotCode::Vector{String}=fill("nodes", length(PlotVars)),SaveFig::Bool=false, wFig::Float64=9.50, hFig::Float64=6.50, mFig::Int=max(1,length(PlotCode)), nFig::Int=Int(ceil(length(PlotCode)/mFig)), Nt_SaveFig::Int=typemax(Int), cmap::String="jet",SC::Int=0, CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0, phi::Float64=0.0025,epsilon::Float64= 1/8,epsilonp::Float64= 1/720,q               ::Float64 = 0.002,f::Float64=1.8,A::Float64=0.5,sigma::Float64=5.0,  Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3,AMA_SizeOrder::Int=FesOrder,AMA_AnisoOrder::Int=2,AMA_ProjN::Int=1,AMA_ProjOrder::Int=0,SpaceAdapt::Bool=true, TimeAdapt::Bool=true,SaveRes::Bool=false, Nt_SaveRes::Int=typemax(Int), Deltat_SaveRes::Float64=0.01)
+function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",PlotVars::Vector{String}= ["u","v","w"], PlotCode::Vector{String}=fill("nodes", length(PlotVars)), PlotFig::Bool=true, Deltat_SaveFig::Float64=0.01, SaveFig::Bool=false, wFig::Float64=9.50, hFig::Float64=6.50, mFig::Int=max(1,length(PlotCode)), nFig::Int=Int(ceil(length(PlotCode)/mFig)), Nt_SaveFig::Int=typemax(Int), cmap::String="jet",SC::Int=0, CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0, phi::Float64=0.0025,epsilon::Float64= 1/8,epsilonp::Float64= 1/720,q::Float64 = 0.002,f::Float64=1.8,A::Float64=0.5,sigma::Float64=5.0,  Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3,AMA_SizeOrder::Int=FesOrder,AMA_AnisoOrder::Int=2,AMA_ProjN::Int=1,AMA_ProjOrder::Int=0,SpaceAdapt::Bool=true, TimeAdapt::Bool=true,SaveRes::Bool=false, Nt_SaveRes::Int=typemax(Int), Deltat_SaveRes::Float64=0.01)
     
     
     #---------------------------------------------------------------------
@@ -18,19 +18,18 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
     
     #Mesh:
     MeshFile                = "$(@__DIR__)/../../temp/Oregonator_SC$(SC).geo"
-    NX                      = Int(ceil(24.0/(hp*FesOrder)))
-    NY                      = Int(ceil(14.0/(hp*FesOrder)))
-    x1                      = -7.0
-    x2                      = 17.0
-    y1                      = -7.0
-    y2                      = 7.0
+    NX                      = Int(ceil(100.0/(hp*FesOrder)))
+    NY                      = Int(ceil(100.0/(hp*FesOrder)))
+    x1                      = 0.0
+    x2                      = 100.0
+    y1                      = 0.0
+    y2                      = 100.0
     TrMesh_Rectangle_Create!(MeshFile, x1, x2, NX, y1, y2, NY)
     
     #Load LIRKHyp solver structure with default data. Modify the default data if necessary:
     solver                  = LIRKHyp_Start(model)
     solver.ProblemName      = "Oregonator"
     solver.SC               = SC
-#     solver.MeshFile         = "$(MeshUbi)SmoothVortex/MeshCase$(MeshCase).geo"
     solver.MeshFile         = MeshFile
     solver.nBounds          = 4
     solver.FesOrder         = FesOrder
@@ -124,6 +123,112 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
 #     CheckJacobian(solver, Plot_dQ_du=true, Plot_df_dgradu=true)
 #     BC_CheckJacobian(solver, 4, Plot_df_du=true, Plot_df_dgradu=true)
 #     return
+
+    #Function to plot solution:
+    figv                = Vector{Figure}(undef,3)
+    if PlotFig
+        figv[1]         = PyPlotSubPlots(mFig, nFig, w=wFig, h=hFig, left=0.9, right=0.4, bottom=1.1, top=1.0)
+        for ii=2:length(figv)
+            figv[ii]    = figure()
+        end
+    end
+    t_lastFig           = 0.0
+    ct_SaveFig          = 0
+    nb_SaveFig          = 0
+
+    function PlotSol()
+
+        ct_SaveFig      += 1
+
+        if PlotFig && ( solver.t-t_lastFig>=Deltat_SaveFig ||
+            ct_SaveFig==Nt_SaveFig || solver.t==tf || solver.t==0.0 )
+
+            figure(figv[1].number)
+            #Loop plot variables:
+            for ii=1:length(PlotVars)
+                PyPlot.subplot(mFig, nFig, ii)
+                PyPlot.cla()
+                v_plot  = PlotContourOregonator(solver, solver.model, PlotVars[ii])
+                title(latexstring(PlotVars[ii],
+                                "; t^n=", sprintf1("%.2e", solver.t)),
+                fontsize=10)
+                println(PlotVars[ii], ": min=", minimum(v_plot), ", max=", maximum(v_plot))
+            end
+            if SaveFig
+                savefig("$(VideosUbi)Oregonator_SC$(SC)_$(nb_SaveFig).png", dpi=400, pad_inches=0)
+            end
+
+            figure(figv[2].number)
+            PyPlot.cla()
+            PlotContour(solver.u[1], solver.fes)
+            PlotMesh!(solver.mesh, color="w")
+            title(latexstring("u", "; t^n=", sprintf1("%.2e", solver.t)),
+            fontsize=10)
+            if SaveFig
+                savefig("$(VideosUbi)Oregonator_Mesh_SC$(SC)_$(nb_SaveFig).png", dpi=400, pad_inches=0)
+            end
+
+            figure(figv[3].number)
+            PyPlot.cla()
+            semilogy(solver.tv, solver.etaSv, ".-b")
+            semilogy(solver.tv, solver.etaTv, ".-g")
+            semilogy(solver.tv, solver.etaAv, ".-r")
+            if true
+                validv  = solver.validv .== 1
+                semilogy(solver.tv[validv], solver.etaSv[validv], "sb")
+                semilogy(solver.tv[validv], solver.etaTv[validv], "sg")
+                semilogy(solver.tv[validv], solver.etaAv[validv], "sr")
+            end
+            legend(["space", "time", "algebraic"])
+            xlabel(L"t")
+            if SaveFig && solver.t==tf
+                savefig("$(VideosUbi)TriplePoint_Errors$(SC)_$(nb_SaveFig).png", dpi=400, pad_inches=0)
+            end
+
+            t_lastFig           += Deltat_SaveFig
+            ct_SaveFig          = 0
+            nb_SaveFig          += 1
+
+        end
+        return
+
+    end
+
+    PlotSol()
+
+    #Function to save intermediate results:
+    t_lastRes           = -Deltat_SaveRes
+    ct_SaveRes          = 0
+    nb_SaveRes          = 0
+
+    model                   = Oregonator()
+    model.CSS               = CSS
+    model.f                 = f
+    model.phi               = phi
+    model.q                 = q
+    model.epsilon           = epsilon
+    model.epsilonp          = epsilonp
+
+
+    function SaveSol()
+
+        ct_SaveRes      += 1
+        if SaveRes && ( solver.t-t_lastRes>=Deltat_SaveRes ||
+            ct_SaveRes==Nt_SaveRes || solver.t==tf || solver.t==0.0 )
+            save("$(ResUbi)LIRKHyp_SC$(SC)_$(nb_SaveRes).jld2", "StudyCase", "Oregonator",
+                 "ConvFlag", ConvFlag, "solver", save(solver),
+                 "epsilon", epsilon, "epsilonp", epsilonp, "q", q, "phi", phi, "f", f,
+                 "Deltat0", Deltat0, "TolS", TolS, "TolT", TolT)
+            t_lastRes   += Deltat_SaveRes
+            ct_SaveRes  = 0
+            nb_SaveRes  += 1
+        end
+        return
+
+    end
+
+    SaveSol()
+
     
     #-----------------------------------------------------------------------------
     #MARCH IN TIME:
@@ -135,9 +240,16 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
             break
         end
         
-#        PlotSol()
-#         SaveSol()
+        PlotSol()
+        SaveSol()
         
+    end
+
+
+    #Save results:
+    if SaveRes
+        save("$(ResUbi)LIRKHyp_SC$(SC)_1000.jld2", "StudyCase", "Oregonator",
+             "ConvFlag", ConvFlag, "solver", save(solver) )
     end
     
 end

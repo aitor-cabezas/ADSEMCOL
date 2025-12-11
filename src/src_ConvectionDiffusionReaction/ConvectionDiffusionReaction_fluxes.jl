@@ -61,6 +61,29 @@ function source!(model::Oregonator, u::Vector{Matrix{Float64}}, Q::Vector{Matrix
     
 end
 
+function NonlinearDiffusionFlux!(model::NonlinearDiffusion,u::Vector{Matrix{Float64}},du::Matrix{Matrix{Float64}},flux::Matrix{Matrix{Float64}},dflux_du::Array{Matrix{Float64},3},dflux_dgradu::Array{Matrix{Float64},4},ComputeJ::Bool)
+
+
+
+
+
+end
+
+function DepVars(model::NonlinearDiffusion, t::Float64, x::Vector{Matrix{Float64}},
+                 u::Vector{Matrix{Float64}})
+
+        A   =   model.A
+        B   =   model.B
+        DT0 =   model.DT0
+        DT  =   @tturbo @. DT0 + A*(u) + B*(u*u)
+
+        vx  =   @tturbo @. (8*pi/25)*sin((pi*x[1])/25)*sin((pi*x[2])/25)
+        vy  =   @tturbo @. (8*pi/25)*cos((pi*x[1])/25)*cos((pi*x[2])/25)
+
+        return [vx,vy],DT
+
+end
+
 #Add monolithic diffusion:
 #   f_Ij = -tau d_j u_I
 
