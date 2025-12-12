@@ -40,15 +40,80 @@ Base.@kwdef mutable struct NonlinearDiffusion <: ConvectionDiffusionModel
 
     #Mandatory fields:
     nVars           ::Int               = 1
+    
+    #Dependent variables. NOTE: DepVars contains variables to be evaluated when
+    #Jacobian is not necessary. DepVarsJ contains variables to be evaluated when
+    #Jacobian is to be computed. Variables in DepVars and DepVarsJ must be sorted in 
+    #the same way.
+    
+    DepVarsJ         ::Vector{String}    = ["vx", "vy", "DT"]
 
 end
 
-# Boundary structs
+#-------------------------------------------------------------------------------
+# Boundary Conditions
+
+mutable struct Dirichlet <: BoundConds
+    uDir            ::FWt11     #must return Dirichlet condition at the boundary [u]
+end
 
 mutable struct Neumann <: BoundConds
     q               ::FWt11     #must return diffusive flux [q=-epsilon*du/dn]
 end
 
+#--------------------------------------------------------------------------------
+#Auxiliary Functions
+
+
+
+#Return index corresponding to dependent variable "var":
+function DepVarIndex(model::ConvectionDiffusionModel, var::String)
+    return findfirst(model.DepVarsJ.==var)
+end
+
+function DepVars(model::NonlinearDiffusion, t::Float64, x::Vector{Matrix{Float64}},
+                 u::Vector{Matrix{Float64}}, vout::Vector{String})
+        
+        nSpecies    =   model.nSpecies
+        A           =   model.A
+        B           =   model.B
+        DT0         =   model.DT0
+            
+        DT          =   @tturbo @. DT0 + A*(u[alpha]) + B*(u[alpha]*u[alpha])
+        vx          =   @tturbo @. (8*pi/25)*sin((pi*x[1])/25)*sin((pi*x[2])/25)
+        vy          =   @tturbo @. (8*pi/25)*cos((pi*x[1])/25)*cos((pi*x[2])/25)
+
+        nout        = length(vout)
+        xout        = Vector{Matrix{Float64}}(undef, nout)
+        
+        for ivar in eachindex(vout)
+            
+            vble    = vout[ivar]
+            
+            if vble=="DT"
+                
+                    xout[ivar]      = DT
+                    
+            elseif vble=="vx"
+                
+                    xout[ivar]      = vx
+                    
+            elseif vble=="vy"
+                
+                    xout[ivar]      = vy
+
+            else
+                
+                error("Variable $(vble) not supported")
+                
+            end  
+        
+        end
+        
+        return xout
+            
+            
+end
 
 
 
@@ -152,3 +217,5 @@ function FluxSource!(model::NonlinearDiffusion, _qp::TrIntVars, ComputeJ::Bool)
     return
 
 end
+
+

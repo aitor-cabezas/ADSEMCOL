@@ -1,3 +1,33 @@
+
+#Dirichlet Conditions
+
+function bflux!(model::Oregonator, BC::Dirichlet, _bqp::TrBintVars, ComputeJ::Bool)
+    
+        x                       =   _bqp.x
+        u                       =   _bqp.u
+        du                      =   _bqp.gradu
+        ParentElems             =   _bqp.Binteg2D.bmesh.ParentElems
+        metric                  =   _bqp.Binteg2D.mesh.metric
+        h                       =   1.0./sqrt.(metric.lambda_bar[ParentElems])*ones(1,_bqp.nqp)
+        bflux                   =   _bqp.f
+        dbflux_du               =   _bqp.df_du
+        dbflux_dgradu           =   _bqp.df_dgradu
+    
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #Neumann conditions:
 function bflux!(model::Oregonator, BC::Neumann, _bqp::TrBintVars, ComputeJ::Bool)
 

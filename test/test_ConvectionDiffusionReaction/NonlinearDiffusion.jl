@@ -82,6 +82,25 @@ function NonlinearDiffusion_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float6
     end
 
 
-    #Initial condition:
+    #Set initial condition:
 
     solver.u0fun        = FW11((x) -> Xfun(x))
+    
+    # Set boundary conditions:
+    
+    function uDir(t::Float64, x::Vector{Matrix{Float64}})
+        
+        u_Dir   = @tturbo @. 0.0*x[1]
+        
+        return u_Dir 
+        
+    end
+
+    BC_Dirichlet        = Dirichlet(FWt11((t,x)->uDir(t,x)))
+    solver.BC           = [BCW(BC_Dirichlet), BCW(BC_Dirichlet ), BCW(BC_Dirichlet), BCW(BC_Dirichlet)]
+    
+    
+    
+    
+    
+    
