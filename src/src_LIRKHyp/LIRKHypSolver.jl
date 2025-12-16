@@ -452,7 +452,7 @@ function LIRK_Step_Pre!(solver::SolverData)
         etaS_np1_est    = etaS_n * exp(solver.dlogetaS_dt*Deltat_n)
         
         #RK variables:
-        RKAlloc!(solver)
+        TMSAlloc!(solver)
         
     end
     if t_n==0.0
@@ -1821,7 +1821,7 @@ end
 
 function LIRKHyp_Step!(solver::SolverData)
     if solver.TMSName   == "LIRK"
-        return LIRKHyp_Step_Pre!(solver)
+        return LIRK_Step_Pre!(solver)
     elseif solver.TMSName   == "IRK"
         return IRK_Step!(solver)
     elseif solver.TMSName   == "ROW"
@@ -1913,7 +1913,7 @@ function IRK_Step!(solver::SolverData)
         etaS_np1_est    = etaS_n * exp(solver.dlogetaS_dt*Deltat_n)
         
         #RK variables:
-        RKAlloc!(solver)
+        TMSAlloc!(solver)
         
     end
     if t_n==0.0

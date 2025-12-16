@@ -15,13 +15,13 @@ function NonlinearDiffusion_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float6
 
 
     #Mesh:
-    MeshFile                = "$(@__DIR__)/../../temp/Oregonator_SC$(SC).geo"
+    MeshFile                = "$(@__DIR__)/../../temp/NonlinearDiffusion$(SC).geo"
     NX                      = Int(ceil(100.0/(hp*FesOrder)))
     NY                      = Int(ceil(100.0/(hp*FesOrder)))
-    x1                      = 25.0
-    x2                      = 75.0
-    y1                      = 12.5
-    y2                      = 87.5
+    x1                      = 0.0
+    x2                      = 50.0
+    y1                      = 0.0
+    y2                      = 50.0
     TrMesh_Rectangle_Create!(MeshFile, x1, x2, NX, y1, y2, NY)
 
     #Load LIRKHyp solver structure with default data. Modify the default data if necessary:
@@ -49,37 +49,61 @@ function NonlinearDiffusion_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float6
 
 
     function Xfun(x::Vector{Matrix{Float64}})
-
-        rxy   = @tturbo @. sqrt((x[1]-xc)*(x[1]-xc) + (x[2]-yc)*(x[2]-yc)+delta)
-        X     = similar(rxy)
-
-        @tturbo for i = eachindex(rxy)
-            if rxy[i] < Rc
-                X[i] = 1 - rxy[i]/Rc
-            else
-                X[i] = 0.0
-            end
-        end
-
-            return X
+         
+         sigma  =  y2/6
+         EXPON  =  @tturbo @.  ((x[1]-x1)^2 + (x[2]-y1)^2)/(sigma*sigma)    
+         X      =  @tturbo @.  x[1]*(x2-x[1])*x[2]*(y2-x[2])*exp(-EXPON)
+         return X
 
     end
 
     function Tfun(t::Float64)
 
-        T = exp(omegat*t)
+        T = sin(omegat*t)
 
         return T
 
     end
+    
+    function dTdtfun(t::Float64)
 
-    function Htheor(X::function,T::function,x::Vector{Matrix{Float64}},t::Float64)
+        dTdt = omegat*cos(omegat*t)
 
-        H   =   @tturbo @. X(x)*T(t)
-
-        return H
+        return dTdt
 
     end
+    
+    function dXdxfun(x::Vector{Matrix{Float64}})
+        
+        dXdx     = 
+
+            return dXdx
+        
+    end
+    
+    function d2Xdx2fun(x::Vector{Matrix{Float64}},rxy::Matrix{Float64})
+        
+        d2Xdx2     = similar(x)
+
+        @tturbo for i = 1:2, j = eachindex(rxy)
+                    
+                    c   =   [xc,yc]
+                    
+                    if rxy[j] < Rc
+                        
+                        d2Xdx2 =  (-1/Rc)*((rxy[j]-((x[i]-c[i])^2)/(rxy[j]))/rxy[j]^2)
+                        
+                    else
+                        
+                        d2Xdx2[i] = 0.0
+                        
+                    end
+                end
+
+            return d2Xdx2
+        
+    end
+    
 
 
     #Set initial condition:

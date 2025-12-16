@@ -15,6 +15,21 @@ try
             TolS=TolS, TolT=TolT, 
             SaveRes=true, Deltat_SaveRes=Deltat_SaveRes, SC=SC)
             
+            
+    elseif ProblemName=="SmoothVortex"
+        
+        TMSName              = parse(String,ARGS[2])
+        RoWMethod            = parse(String,ARGS[3])
+        RKMethod             = parse(String,ARGS[4])
+        tf                   = parse(Float64,ARGS[5])
+        Deltat0              = parse(Float64,ARGS[6])
+        TolT                 = parse(Float64,ARGS[7])
+        hp                   = parse(Float64,ARGS[8])
+        TolS                 = parse(Float64,ARGS[9])
+        SaveRes              = parse(Bool,ARGS[10])
+        SC                   = parse(Int64,ARGS[11])
+        SmoothVortex(TMSName=TMSName,RoWMethod=RoWMethod,RKMethod=RKMethod,tf=tf,Deltat0=Deltat0,TolT=TolT,hp=hp,TolS=TolS,SaveRes=SaveRes,SC=SC)
+        
     else
         error("Undefined problem $(ProblemName)")
     end
