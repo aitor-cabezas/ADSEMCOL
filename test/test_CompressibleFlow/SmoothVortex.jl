@@ -100,6 +100,7 @@ function SmoothVortex(; hp::Float64=1.0, FesOrder::Int=5, tf::Float64 = 0.1, TMS
     solver.TolT             = TolT
     solver.SpaceAdapt       = SpaceAdapt
     solver.TimeAdapt        = TimeAdapt
+    solver.CA_max           = 0.1
     
     #Set initial and boundary conditions:
     solver.u0fun        = FW11((x) -> utheor(0.0, x)) 
