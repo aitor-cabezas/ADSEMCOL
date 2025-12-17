@@ -22,7 +22,7 @@ function GetSolver(SC::Int, nb::Int)
     return load(FileName, "solver")
 end
 
-function GetVbles(SC::Int, nb::Int, vbles::Vector{String})
+function GetVbles(SC::Int, vbles::Vector{String}; nb::Int=1)
 
     FileName    = GetFileName(SC, nb)
     
@@ -143,6 +143,9 @@ function GetVbles(SC::Int, nb::Int, vbles::Vector{String})
             xout[ii]    = errmassv[II]
         elseif vble=="Soliton_alpha"
             xout[ii]    = load(FileName, "alpha")
+        elseif vble=="RKName"
+            ????
+            xout[ii]    = ???
         else
             xout[ii]    = getfield(solver, Symbol(vble))
 #             xout[ii]    = load(FileName, vble)
@@ -152,6 +155,10 @@ function GetVbles(SC::Int, nb::Int, vbles::Vector{String})
     
     return xout
     
+end
+
+function GetVbles(SC::Int, nb::Int, vbles::Vector{String})
+    return GetVbles(SC, vbles, nb=nb)
 end
 
 function GetString(vble::String)

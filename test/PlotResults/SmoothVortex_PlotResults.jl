@@ -729,7 +729,7 @@ end
 
 function Errors_SmoothVortex(; SaveFig::Bool=false, w::Float64=7.50, h::Float64=6.50)
 
-    SC      = 50061
+    SC      = 1000
     nb      = 1
     solver  = GetSolver(SC, nb)
     
@@ -776,5 +776,72 @@ function Errors_SmoothVortex(; SaveFig::Bool=false, w::Float64=7.50, h::Float64=
     
 end
 
+#----------------------------------------------------------------------------------------------
+#COMPARISON OF TMS:
 
+function CompareTMS_SmoothVortex(StudyCase::String; 
+    SaveFig::Bool=false, w::Float64=8.50, h::Float64=8.50)
+
+    SCvv0   = NaN
+    SCvv1   = NaN
+    nb      = NaN
     
+    if StudyCase=="normal"
+    
+        #TimeAdapt:
+        SCvv1       = [ 1000:1003, 
+                       1004:1007, 
+                       1008:1011 ]
+                        
+        nb          = 1
+        
+    end
+    
+    #------------------------------------------------------------
+    
+    Deltatvv1, errvv1, etavv1, 
+        tCPUvv1, CFLvv1         = GetVbles(SCvv1, ["Deltat", "errL2L2", "etaL2L2", 
+                                                    "tCPU", "CFLmax"], nb=nb)
+    EOCvv1                      = ExpOrderConv(Deltatvv1, errvv1)
+    
+    PyPlotFigure(w=w, h=h, bottom=1.5)
+    colorv                      = PyPlotColors("jet2", length(SCvv1))
+    leg                         = String[]
+    for ii=1:length(SCvv1)
+        loglog(Deltatvv1[ii], errvv1[ii], color=colorv[ii], linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
+#         loglog(Deltatvv1[ii], etavv1[ii], color=colorv[ii], linewidth=0.5, linestyle="dashed", marker="s", markersize=3.5)
+        push!(leg, "")
+    end
+    xlabel(latexstring("\\tau"))
+    legend(leg, fontsize=8)
+    tick_params(axis="both", which="both", labelsize=TickSize)
+    grid("on")
+    if SaveFig
+        savefig("$(FigUbi)SmoothVortex_TimeAdapt1.png", dpi=800, pad_inches=0)
+    end
+               
+    PyPlotFigure(w=w, h=h, bottom=1.5, left=1.5)
+    loglog(tCPUvv1[1], errvv1[1], color="b", linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
+    grid("on")
+    xlabel(latexstring(GetString("tCPU")))
+    ylabel(latexstring(GetString("errL2L2")), rotation=0)
+    tick_params(axis="both", which="both", labelsize=TickSize)
+    if SaveFig
+        savefig("$(FigUbi)SmoothVortex_TimeAdapt2.png", dpi=800, pad_inches=0)
+    end
+    
+    PyPlotFigure(w=w, h=h, bottom=1.5, left=1.5)
+    loglog(CFLvv1[1], errvv1[1], color="b", linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
+    grid("on")
+    xlabel(latexstring(GetString("CFLmax")))
+    ylabel(latexstring(GetString("errL2L2")), rotation=0)
+    tick_params(axis="both", which="both", labelsize=TickSize)
+    if SaveFig
+        savefig("$(FigUbi)SmoothVortex_TimeAdapt3.png", dpi=800, pad_inches=0)
+    end
+    
+    display(EOCvv1)
+    
+    return
+    
+end
