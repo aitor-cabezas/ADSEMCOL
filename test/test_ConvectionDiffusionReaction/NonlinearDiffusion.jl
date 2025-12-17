@@ -1,6 +1,7 @@
 include("test_ConvectionDiffusionReaction.jl")
 
-function NonlinearDiffusion_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",  CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0, A::Float64=1.0, B::Float64= 1.0, Dt0::Float64= 1.0, delta::Float64=1e-6,xc::Float64=50.0,yc::Float64=50.0,Rc::Float64=15.0,omegat::Float64=1.0, Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3,AMA_SizeOrder::Int=FesOrder,AMA_AnisoOrder::Int=2,AMA_ProjN::Int=1,AMA_ProjOrder::Int=0,SpaceAdapt::Bool=true, TimeAdapt::Bool=true)
+function NonlinearDiffusion_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",  CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0, 
+A::Float64=1.0, B::Float64= 1.0, Dt0::Float64= 1.0,omegat::Float64=1.0, Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3,AMA_SizeOrder::Int=FesOrder,AMA_AnisoOrder::Int=2,AMA_ProjN::Int=1,AMA_ProjOrder::Int=0,SpaceAdapt::Bool=true, TimeAdapt::Bool=true)
 
     #---------------------------------------------------------------------
     #PRE-PROCESS STAGE:
@@ -75,32 +76,50 @@ function NonlinearDiffusion_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float6
     
     function dXdxfun(x::Vector{Matrix{Float64}})
         
-        dXdx     = 
-
-            return dXdx
+        sigma  =  y2/6
+        EXPON  =  @tturbo @.  ((x[1]-x2/2)^2 + (x[2]-y2/2)^2)/(sigma*sigma)  
+        dXdx   =  @tturbo @.  x[2]*(y2-x[2])*exp(-EXPON)*
+                              ((x2-2*x[1])-(2/sigma^2)*(x2*x[1]^2-x[1]^3-x[1]*x2^2/2+x2/2*x[1]^2)) 
+        
+        return dXdx
         
     end
     
-    function d2Xdx2fun(x::Vector{Matrix{Float64}},rxy::Matrix{Float64})
+    function dXdyfun(x::Vector{Matrix{Float64}})
         
-        d2Xdx2     = similar(x)
-
-        @tturbo for i = 1:2, j = eachindex(rxy)
-                    
-                    c   =   [xc,yc]
-                    
-                    if rxy[j] < Rc
-                        
-                        d2Xdx2 =  (-1/Rc)*((rxy[j]-((x[i]-c[i])^2)/(rxy[j]))/rxy[j]^2)
-                        
-                    else
-                        
-                        d2Xdx2[i] = 0.0
-                        
-                    end
-                end
-
-            return d2Xdx2
+        sigma  =  y2/6
+        EXPON  =  @tturbo @.  ((x[1]-x2/2)^2 + (x[2]-y2/2)^2)/(sigma*sigma)  
+        dXdy   =  @tturbo @.  x[1]*(x2-x[1])*exp(-EXPON)*
+                              ((y2-2*x[2])-(2/sigma^2)*(y2*x[2]^2-x[2]^3-x[2]*y2^2/2+y2/2*x[2]^2)) 
+        
+        return dXdy
+        
+    end
+    
+    function d2Xdx2fun(x::Vector{Matrix{Float64}})
+        
+        sigma  =  y2/6
+        EXPON  =  @tturbo @.((x[1]-x2/2)^2 + (x[2]-y2/2)^2)/(sigma*sigma)
+        Px     =  @tturbo @.(x2-2*x[1])-(2/sigma^2)*(x2*x[1]^2-x[1]^3-x[1]*x2^2/2+x2/2*x[1]^2)
+        Pprimx =  @tturbo @. -2/sigma^2*(2*x[1]*x2 - 3*x[1] -1/2*x2^2 + 2*x[1]*x2/2) - 2
+        d2Xdx2 =  @tturbo @. x[1]*(x2-x[1])*exp(-EXPON)*((-2/sigma^2)*(x[1]-x2/2)*Px+Pprimx)   
+        
+        
+        return d2Xdx2
+        
+    end
+    
+    
+    function d2Xdy2fun(x::Vector{Matrix{Float64}})
+        
+        sigma  =  y2/6
+        EXPON  =  @tturbo @.((x[1]-x2/2)^2 + (x[2]-y2/2)^2)/(sigma*sigma)
+        Px     =  @tturbo @.(y2-2*x[2])-(2/sigma^2)*(y2*x[2]^2-x[2]^3-x[2]*y2^2/2+y2/2*x[2]^2)
+        Pprimx =  @tturbo @. -2/sigma^2*(2*x[2]*y2 - 3*x[2] -1/2*y2^2 + 2*x[2]*y2/2) - 2
+        d2Xdy2 =  @tturbo @. x[2]*(y2-x[2])*exp(-EXPON)*((-2/sigma^2)*(x[2]-y2/2)*Px+Pprimx)   
+        
+        
+        return d2Xdy2
         
     end
     
