@@ -26,8 +26,11 @@ try
         TolT                 = parse(Float64,ARGS[7])
         hp                   = parse(Float64,ARGS[8])
         TolS                 = parse(Float64,ARGS[9])
-        SC                   = parse(Int64,ARGS[10])
-        SmoothVortex(TMSName=TMSName,RoWMethod=RoWMethod,RKMethod=RKMethod,tf=tf,Deltat0=Deltat0,TolT=TolT,hp=hp,TolS=TolS,SaveRes=true,SC=SC)
+        vortex_st            = parse(Float64,ARGS[10])
+        u_inf                = parse(Float64,ARGS[11])
+        gamma                = parse(Float64,ARGS[12])
+        SC                   = parse(Int64,ARGS[13])
+        SmoothVortex(TMSName=TMSName,RoWMethod=RoWMethod,RKMethod=RKMethod,tf=tf,Deltat0=Deltat0,TolT=TolT,hp=hp,TolS=TolS,vortex_st=vortex_st,u_inf=u_inf,gamma=gamma,SC=SC,SaveRes=true)
         
     else
         error("Undefined problem $(ProblemName)")

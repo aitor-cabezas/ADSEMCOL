@@ -1,8 +1,8 @@
 include("test_CompressibleFlow.jl")
 
-function SmoothVortex(; hp::Float64=1.0, FesOrder::Int=5, tf::Float64 = 0.1, TMSName::String= "RoW",
-    RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",
-    epsilon::Float64=0.0, nu::Float64=0e-6, beta::Float64=0.0, kappa_rho_cv::Float64=0e-6,
+function SmoothVortex(; hp::Float64=1.0, FesOrder::Int=5, tf::Float64 = 0.1, 
+    TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",
+    epsilon::Float64=0.0, nu::Float64=0e-6, beta::Float64=0.0, kappa_rho_cv::Float64=0e-6, vortex_st::Float64=5.0,u_inf::Float64=1.0,gamma::Float64=1.4,
     PlotVars::Vector{String}=String[], PlotCode::Vector{String}=fill("nodes", length(PlotVars)), 
     SaveFig::Bool=false, wFig::Float64=9.50, hFig::Float64=6.50, 
     mFig::Int=max(1,length(PlotCode)), nFig::Int=Int(ceil(length(PlotCode)/mFig)), Nt_SaveFig::Int=typemax(Int), cmap::String="jet",
@@ -13,12 +13,6 @@ function SmoothVortex(; hp::Float64=1.0, FesOrder::Int=5, tf::Float64 = 0.1, TMS
     SaveRes::Bool=false, Nt_SaveRes::Int=typemax(Int), Deltat_SaveRes::Float64=Inf)
 
     #---------------------------------------------------------------------
-    #PROBLEM DATA:
-    
-    #Problem data:
-    gamma           = 1.4
-    vortex_st       = 5.0   #vortex strength
-    u_inf           = 1.0   #vortex horizontal velocity
     
     #Theoretical solution:
     function utheor(t::Float64, x::Vector{<:VecOrMat{Float64}})
