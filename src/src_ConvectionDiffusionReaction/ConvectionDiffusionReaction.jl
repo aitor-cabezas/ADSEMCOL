@@ -27,6 +27,33 @@ end
 
 abstract type ConvectionDiffusionModel <: ConstModels end
 
+
+mutable struct NCD <: ConvectionDiffusionModel
+
+    #Model's characteristic fields. These functions receive (t,[x1,x2],[u]) and return
+    a               ::FWt21                     #Returns velocity [a1, a2]
+    epsilon         ::FWt21                     #Returns viscosity coefficient [epsilon]
+    Q               ::FWt21                     #Returns source [Q]
+    A               ::Float64           
+    B               ::Float64          
+    DT0             ::Float64           
+    
+    #Functions to compute the jacobians:
+    da_du           ::FWt21
+    depsilon_du     ::FWt21
+    dQ_du           ::FWt21
+    
+    #Stabilization variables:
+    CSS             ::Float64   #Subgrid stabilization
+    CW              ::Float64   #Boundary penalty (50.0-200.0 for IIPG)
+    
+    #Mandatory fields:
+    nVars           ::Int                 
+    
+    SCD()           = new()
+    
+end
+
 Base.@kwdef mutable struct NonlinearDiffusion <: ConvectionDiffusionModel
 
     #Model's characteristic fields:

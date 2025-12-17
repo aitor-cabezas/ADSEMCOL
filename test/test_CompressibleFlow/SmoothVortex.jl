@@ -243,8 +243,7 @@ function SmoothVortex(; hp::Float64=1.0, FesOrder::Int=5, tf::Float64 = 0.1,
     
     while solver.t<tf
     
-#         ConvFlag            = LIRKHyp_Step!(solver)
-        ConvFlag            = RoW_Step!(solver)
+        ConvFlag            = LIRKHyp_Step!(solver)
         
         if ConvFlag<=0
             break
