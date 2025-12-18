@@ -789,9 +789,12 @@ function CompareTMS_SmoothVortex(StudyCase::String;
     if StudyCase=="normal"
     
         #TimeAdapt:
-        SCvv1       = [ 1000:1003, 
+        SCvv1       = [1001:1003, 
                        1004:1007, 
-                       1008:1011 ]
+                       1008:1011,
+                       1012:1015,
+                       1016:1019,
+                       1020:1023]
                         
         nb          = 1
         
@@ -799,9 +802,7 @@ function CompareTMS_SmoothVortex(StudyCase::String;
     
     #------------------------------------------------------------
     
-    Deltatvv1, errvv1, etavv1, 
-        tCPUvv1, CFLvv1         = GetVbles(SCvv1, ["Deltat", "errL2L2", "etaL2L2", 
-                                                    "tCPU", "CFLmax"], nb=nb)
+    Deltatvv1, errvv1, etavv1,tCPUvv1, CFLvv1,TMSNamevv1,RoWMethodvv1,RKMethodvv1 = GetVbles(SCvv1, ["Deltat", "errL2L2", "etaL2L2","tCPU","CFLmax", "TMSName", "RoWMethod", "RKMethod"], nb=nb)
     EOCvv1                      = ExpOrderConv(Deltatvv1, errvv1)
     
     PyPlotFigure(w=w, h=h, bottom=1.5)
@@ -810,7 +811,14 @@ function CompareTMS_SmoothVortex(StudyCase::String;
     for ii=1:length(SCvv1)
         loglog(Deltatvv1[ii], errvv1[ii], color=colorv[ii], linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
 #         loglog(Deltatvv1[ii], etavv1[ii], color=colorv[ii], linewidth=0.5, linestyle="dashed", marker="s", markersize=3.5)
-        push!(leg, "")
+
+        if uppercase(TMSNamevv1[ii][1]) == "ROW"
+            push!(leg,TMSNamevv1[ii][1]*"-"*RoWMethodvv1[ii][1])
+        elseif TMSNamevv1[ii][1] == "LIRK"
+            push!(leg,TMSNamevv1[ii][1]*"-"*RKMethodvv1[ii][1])
+        elseif TMSNamevv1[ii][1] == "IRK"
+            push!(leg,TMSNamevv1[ii][1]*"-"*RKMethodvv1[ii][1])
+        end
     end
     xlabel(latexstring("\\tau"))
     legend(leg, fontsize=8)

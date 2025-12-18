@@ -143,9 +143,12 @@ function GetVbles(SC::Int, vbles::Vector{String}; nb::Int=1)
             xout[ii]    = errmassv[II]
         elseif vble=="Soliton_alpha"
             xout[ii]    = load(FileName, "alpha")
-        elseif vble=="RKName"
-            ????
-            xout[ii]    = ???
+        elseif vble=="TMSName" 
+            xout[ii] =  solver.TMSName
+        elseif vble=="RoWMethod"
+            xout[ii] =  solver.RoWMethod
+        elseif vble=="RKMethod"
+            xout[ii] =  solver.RKMethod
         else
             xout[ii]    = getfield(solver, Symbol(vble))
 #             xout[ii]    = load(FileName, vble)
@@ -203,9 +206,9 @@ function GetVbles(SCvv::Vector{<:AbstractVector{Int}}, vbles::Vector{String}; nb
     nvbles      = length(vbles)
     
     #Allocate:
-    xout            = Vector{Vector{Vector{Float64}}}(undef,nvbles)  #vbles * nSCvv * nSCv
+    xout            = Vector{Vector{Vector{Any}}}(undef,nvbles)  #vbles * nSCvv * nSCv
     for ivar=1:nvbles
-        xout[ivar]  = Vector{Vector{Float64}}(undef,nSCvv)
+        xout[ivar]  = Vector{Vector{Any}}(undef,nSCvv)
     end
     
     #Loop SCvv:
@@ -231,10 +234,10 @@ function GetVbles(SCvv::Vector{<:AbstractVector{Int}}, vbles::Vector{String}; nb
     
 end
 
-function ExpOrderConv(xvv::Vector{Vector{Float64}}, yvv::Vector{Vector{Float64}})
+function ExpOrderConv(xvv::Vector{Vector{Any}}, yvv::Vector{Vector{Any}})
 
     nSCvv   = length(xvv)
-    EOCvv   = Vector{Vector{Float64}}(undef,nSCvv)
+    EOCvv   = Vector{Vector{Any}}(undef,nSCvv)
     
     for ii=1:nSCvv
         xv          = xvv[ii]
