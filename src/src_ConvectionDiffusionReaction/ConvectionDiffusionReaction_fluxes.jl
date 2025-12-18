@@ -49,15 +49,33 @@ function source!(model::Oregonator, u::Vector{Matrix{Float64}}, Q::Vector{Matrix
     
     if ComputeJ
        
-       @tturbo @. dQ_du[1,1]   +=   (1/epsilonv[1])*(1-2*u[1]-u[3])
-       @tturbo @. dQ_du[1,3]   +=   (1/epsilonv[1])*(q-u[1])
-       @tturbo @. dQ_du[2,1]   +=   1.0
-       @tturbo @. dQ_du[2,2]   +=   -1.0
-       @tturbo @. dQ_du[3,1]   +=   (-1/epsilonv[3])*u[3]
-       @tturbo @. dQ_du[3,2]   +=   f/epsilonv[3]
-       @tturbo @. dQ_du[3,3]   +=   -1/epsilonv[3]*(u[1]+q)
+        @tturbo @. dQ_du[1,1]   +=   (1/epsilonv[1])*(1-2*u[1]-u[3])
+        @tturbo @. dQ_du[1,3]   +=   (1/epsilonv[1])*(q-u[1])
+        @tturbo @. dQ_du[2,1]   +=   1.0
+        @tturbo @. dQ_du[2,2]   +=   -1.0
+        @tturbo @. dQ_du[3,1]   +=   (-1/epsilonv[3])*u[3]
+        @tturbo @. dQ_du[3,2]   +=   f/epsilonv[3]
+        @tturbo @. dQ_du[3,3]   +=   -1/epsilonv[3]*(u[1]+q)
        
+        # CFL_reac Computation
+       
+        Aij_inf = zeros(nSpecies,nSpecies)
+       
+        for i=1:nSpecies,j=1:nSpecies
+
+            Aij_inf[i,j] =   norm(dQ_du[i,j],Inf)
+
+        end
+    
+        CFL_reac = norm(Aij_inf,Inf)
+       
+    else 
+       
+        CFL_reac = NaN
+        
     end
+    
+    return CFL_reac
     
 end
 

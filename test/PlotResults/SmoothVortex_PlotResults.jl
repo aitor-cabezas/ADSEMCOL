@@ -788,7 +788,7 @@ function CompareTMS_SmoothVortex(StudyCase::String;
     
     if StudyCase=="normal"
     
-        #TimeAdapt:
+        #TimeAdapt: YES
         SCvv1       = [1001:1003, 
                        1004:1007, 
                        1008:1011,
@@ -800,9 +800,23 @@ function CompareTMS_SmoothVortex(StudyCase::String;
         
     end
     
+     if StudyCase=="NoTAdapt"
+    
+        #TimeAdapt:NO
+        SCvv1       = [1024:1027, 
+                       1028:1031, 
+                       1032:1035,
+                       1036:1039,
+                       1040:1043,
+                       1044:1047]
+                        
+        nb          = 1
+        
+    end
+    
     #------------------------------------------------------------
     
-    Deltatvv1, errvv1, etavv1,tCPUvv1, CFLvv1,TMSNamevv1,RoWMethodvv1,RKMethodvv1 = GetVbles(SCvv1, ["Deltat", "errL2L2", "etaL2L2","tCPU","CFLmax", "TMSName", "RoWMethod", "RKMethod"], nb=nb)
+    Deltatvv1, errvv1, etavv1,tCPUvv1, CFLvv1,TIMethodNamevv1 = GetVbles(SCvv1, ["Deltat", "errL2L2", "etaL2L2","tCPU","CFLmax", "TIMethodName"], nb=nb)
     EOCvv1                      = ExpOrderConv(Deltatvv1, errvv1)
     
     PyPlotFigure(w=w, h=h, bottom=1.5)
@@ -812,14 +826,9 @@ function CompareTMS_SmoothVortex(StudyCase::String;
         loglog(Deltatvv1[ii], errvv1[ii], color=colorv[ii], linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
 #         loglog(Deltatvv1[ii], etavv1[ii], color=colorv[ii], linewidth=0.5, linestyle="dashed", marker="s", markersize=3.5)
 
-        if uppercase(TMSNamevv1[ii][1]) == "ROW"
-            push!(leg,TMSNamevv1[ii][1]*"-"*RoWMethodvv1[ii][1])
-        elseif TMSNamevv1[ii][1] == "LIRK"
-            push!(leg,TMSNamevv1[ii][1]*"-"*RKMethodvv1[ii][1])
-        elseif TMSNamevv1[ii][1] == "IRK"
-            push!(leg,TMSNamevv1[ii][1]*"-"*RKMethodvv1[ii][1])
-        end
+        push!(leg,TIMethodNamevv1[ii][1])
     end
+    ylabel("err")
     xlabel(latexstring("\\tau"))
     legend(leg, fontsize=8)
     tick_params(axis="both", which="both", labelsize=TickSize)
@@ -827,20 +836,35 @@ function CompareTMS_SmoothVortex(StudyCase::String;
     if SaveFig
         savefig("$(FigUbi)SmoothVortex_TimeAdapt1.png", dpi=800, pad_inches=0)
     end
-               
-    PyPlotFigure(w=w, h=h, bottom=1.5, left=1.5)
-    loglog(tCPUvv1[1], errvv1[1], color="b", linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
-    grid("on")
-    xlabel(latexstring(GetString("tCPU")))
-    ylabel(latexstring(GetString("errL2L2")), rotation=0)
+    
+    
+    PyPlotFigure(w=w, h=h, bottom=1.5)
+    colorv                      = PyPlotColors("jet2", length(SCvv1))
+    leg                         = String[]
+    for ii=1:length(SCvv1)
+        loglog(tCPUvv1[ii], errvv1[ii], color=colorv[ii], linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
+#         loglog(Deltatvv1[ii], etavv1[ii], color=colorv[ii], linewidth=0.5, linestyle="dashed", marker="s", markersize=3.5)
+
+        push!(leg,TIMethodNamevv1[ii][1])
+    end
+    ylabel("err")
+    xlabel("tCPU")
+    legend(leg, fontsize=8)
     tick_params(axis="both", which="both", labelsize=TickSize)
+    grid("on")
     if SaveFig
         savefig("$(FigUbi)SmoothVortex_TimeAdapt2.png", dpi=800, pad_inches=0)
     end
+           
     
-    PyPlotFigure(w=w, h=h, bottom=1.5, left=1.5)
-    loglog(CFLvv1[1], errvv1[1], color="b", linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
-    grid("on")
+    colorv                      = PyPlotColors("jet2", length(SCvv1))
+    leg                         = String[]
+    for ii=1:length(SCvv1)
+        loglog(CFLvv1[ii], errvv1[ii], color=colorv[ii], linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
+#         loglog(Deltatvv1[ii], etavv1[ii], color=colorv[ii], linewidth=0.5, linestyle="dashed", marker="s", markersize=3.5)
+
+        push!(leg,TIMethodNamevv1[ii][1])
+    end
     xlabel(latexstring(GetString("CFLmax")))
     ylabel(latexstring(GetString("errL2L2")), rotation=0)
     tick_params(axis="both", which="both", labelsize=TickSize)

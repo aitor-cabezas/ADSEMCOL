@@ -143,15 +143,14 @@ function GetVbles(SC::Int, vbles::Vector{String}; nb::Int=1)
             xout[ii]    = errmassv[II]
         elseif vble=="Soliton_alpha"
             xout[ii]    = load(FileName, "alpha")
-        elseif vble=="TimeMethodName"
-            ?????
-            xout[ii]    = 
-        elseif vble=="TMSName" 
-            xout[ii] =  solver.TMSName
-        elseif vble=="RoWMethod"
-            xout[ii] =  solver.RoWMethod
-        elseif vble=="RKMethod"
-            xout[ii] =  solver.RKMethod
+        elseif vble=="TIMethodName" #Time Integration Method Name
+            if uppercase(solver.TMSName)=="ROW"
+                 xout[ii] = solver.TMSName*"-"*solver.RoWMethod
+            elseif uppercase(solver.TMSName)=="LIRK" 
+                 xout[ii] = solver.TMSName*"-"*solver.RKMethod
+            elseif uppercase(solver.TMSName)=="IRK" 
+                 xout[ii] = solver.TMSName*"-"*solver.RKMethod
+            end
         else
             xout[ii]    = getfield(solver, Symbol(vble))
 #             xout[ii]    = load(FileName, vble)
