@@ -143,6 +143,9 @@ function GetVbles(SC::Int, vbles::Vector{String}; nb::Int=1)
             xout[ii]    = errmassv[II]
         elseif vble=="Soliton_alpha"
             xout[ii]    = load(FileName, "alpha")
+        elseif vble=="TimeMethodName"
+            ?????
+            xout[ii]    = 
         elseif vble=="TMSName" 
             xout[ii] =  solver.TMSName
         elseif vble=="RoWMethod"
