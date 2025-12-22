@@ -856,7 +856,7 @@ function CompareTMS_SmoothVortex(StudyCase::String;
         savefig("$(FigUbi)SmoothVortex_TimeAdapt2.png", dpi=800, pad_inches=0)
     end
            
-    
+    PyPlotFigure(w=w, h=h, bottom=1.5)
     colorv                      = PyPlotColors("jet2", length(SCvv1))
     leg                         = String[]
     for ii=1:length(SCvv1)

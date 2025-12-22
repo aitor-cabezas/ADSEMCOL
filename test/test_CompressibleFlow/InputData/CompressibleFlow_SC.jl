@@ -4,40 +4,45 @@ using Interpolations
 #INITIAL CONDITIONS:
 
 function vx_SmoothVortex(xm::Array{Float64,2},gamma::Float64,beta::Float64,
-    xvortex::Float64,yvortex::Float64,uinfty::Float64,vinfty::Float64)
+    xvortex::Float64,yvortex::Float64,uinfty::Float64,vinfty::Float64,R::Float64,sigma::Float64,ainfty::Float64)
 
     r2v     = @views @. (xm[:,1]-xvortex)^2+(xm[:,2]-yvortex)^2
-    vx      = @views @. uinfty-(xm[:,2]-yvortex)*beta/2/pi*exp((1-r2v)/2)
+    vx      = uinfty .- ainfty.* @views xm[:,2] ./ R .* beta .* exp.(-r2v ./ (2*sigma^2 * R^2))
+
     return  vx
 
 end
-function vy_SmoothVortex(xm::Array{Float64,2},gamma::Float64,beta::Float64,
-    xvortex::Float64,yvortex::Float64,uinfty::Float64,vinfty::Float64)
+function vy_SmoothVortex(xm::Array{Float64,2},gamma::Float64,beta::Float64, xvortex::Float64,yvortex::Float64,uinfty::Float64,vinfty::Float64,R::Float64,sigma::Float64,ainfty::Float64)
 
     r2v     = @views @. (xm[:,1]-xvortex)^2+(xm[:,2]-yvortex)^2
-    vy      = @views @. vinfty+(xm[:,1]-xvortex)*beta/2/pi*exp((1-r2v)/2)
+    vy      = vinfty .+ ainfty.* @views xm[:,1] ./ R .* beta .* exp.(-r2v ./ (2*sigma^2 * R^2))
     return  vy
 
 end
 function TStar_SmoothVortex(xm::Array{Float64,2},gamma::Float64,beta::Float64,
-    xvortex::Float64,yvortex::Float64,uinfty::Float64,vinfty::Float64)
-
+    xvortex::Float64,yvortex::Float64,uinfty::Float64,vinfty::Float64,R::Float64,sigma::Float64)
     r2v     = @views @. (xm[:,1]-xvortex)^2+(xm[:,2]-yvortex)^2
-    Tv      = @views @. 1-(gamma-1)*beta^2/8/gamma/pi^2*exp(1-r2v)
+    Tv      = @views @. 1-((gamma-1)/2)*(beta*exp(-(r2v)/(2*sigma^2*R^2)))^2
     return  Tv
 
 end
 function e_SmoothVortex(xm::Array{Float64,2},gamma::Float64,beta::Float64,
-    xvortex::Float64,yvortex::Float64,uinfty::Float64,vinfty::Float64)
+    xvortex::Float64,yvortex::Float64,uinfty::Float64,vinfty::Float64,R::Float64,sigma::Float64,rho_infty::Float64,p_infty::Float64)
 
     #e = cv*T = cv * Tstar * (p_infty/Rg/rho_infty) = 1/(gamma-1)*p_infty/rho_infty*Tstar
-    return  TStar_SmoothVortex(xm,gamma,beta,xvortex,yvortex,uinfty,vinfty)./(gamma-1)
+    return  TStar_SmoothVortex(xm,gamma,beta,xvortex,yvortex,uinfty,vinfty,R,sigma)./(gamma-1).*p_infty./rho_infty
 
 end
 function rho_SmoothVortex(xm::Array{Float64,2},gamma::Float64,beta::Float64,
-    xvortex::Float64,yvortex::Float64,uinfty::Float64,vinfty::Float64)
+    xvortex::Float64,yvortex::Float64,uinfty::Float64,vinfty::Float64,R::Float64,sigma::Float64,rho_infty::Float64)
 
-    return  TStar_SmoothVortex(xm,gamma,beta,xvortex,yvortex,uinfty,vinfty).^(1/(gamma-1))
+    return rho_infty.*TStar_SmoothVortex(xm,gamma,beta,xvortex,yvortex,uinfty,vinfty,R,sigma).^(1/(gamma-1))
+
+end
+
+function p_SmoothVortex(xm::Array{Float64,2},gamma::Float64,beta::Float64, xvortex::Float64,yvortex::Float64,uinfty::Float64,vinfty::Float64,R::Float64,sigma::Float64,p_infty::Float64)
+
+    return  p_infty.*TStar_SmoothVortex(xm,gamma,beta,xvortex,yvortex,uinfty,vinfty,R,sigma).^(gamma/(gamma-1))
 
 end
 

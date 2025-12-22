@@ -2,7 +2,7 @@ include("test_CompressibleFlow.jl")
 
 function SmoothVortex(; hp::Float64=1.0, FesOrder::Int=5, tf::Float64 = 0.1, 
     TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",
-    epsilon::Float64=0.0, nu::Float64=0e-6, beta::Float64=0.0, kappa_rho_cv::Float64=0e-6, vortex_st::Float64=5.0,u_inf::Float64=1.0,gamma::Float64=1.4,
+    epsilon::Float64=0.0, nu::Float64=0e-6, beta::Float64=0.0, kappa_rho_cv::Float64=0e-6, vortex_st::Float64=0.6,u_inf::Float64=1.0,gamma::Float64=1.4,a_infty::Float64=1.18,rho_infty::Float64=1.0,R::Float64=1.0,sigma::Float64=1.0,
     PlotVars::Vector{String}=String[], PlotCode::Vector{String}=fill("nodes", length(PlotVars)), 
     SaveFig::Bool=false, wFig::Float64=9.50, hFig::Float64=6.50, 
     mFig::Int=max(1,length(PlotCode)), nFig::Int=Int(ceil(length(PlotCode)/mFig)), Nt_SaveFig::Int=typemax(Int), cmap::String="jet",
@@ -13,16 +13,22 @@ function SmoothVortex(; hp::Float64=1.0, FesOrder::Int=5, tf::Float64 = 0.1,
     SaveRes::Bool=false, Nt_SaveRes::Int=typemax(Int), Deltat_SaveRes::Float64=Inf)
 
     #---------------------------------------------------------------------
-    
+
     #Theoretical solution:
     function utheor(t::Float64, x::Vector{<:VecOrMat{Float64}})
-        
+
         xm          = hcat(x[1][:], x[2][:])
-        rho         = rho_SmoothVortex(xm, gamma, vortex_st, t, 0.0, u_inf, 0.0)
-        rhovx       = rho .* vx_SmoothVortex(xm, gamma, vortex_st, t, 0.0, u_inf, 0.0)
-        rhovy       = rho .* vy_SmoothVortex(xm, gamma, vortex_st, t, 0.0, u_inf, 0.0)
-        rhoE        = @. rho * $e_SmoothVortex(xm, gamma, vortex_st, t, 0.0, u_inf, 0.0) + 
-                                0.5*(rhovx^2 + rhovy^2)/rho
+        rho         = rho_SmoothVortex(xm, gamma, vortex_st, t, 0.0, u_inf, 0.0, R, sigma,
+                                       rho_infty)
+        rhovx       = rho .* vx_SmoothVortex(xm, gamma, vortex_st, t, 0.0, u_inf, 0.0, R, sigma,
+                                             a_infty)
+        rhovy       = rho .* vy_SmoothVortex(xm, gamma, vortex_st, t, 0.0, u_inf, 0.0, R, sigma,
+                                             a_infty)
+
+        p_infty = (rho_infty/gamma)*(a_infty)^2
+
+        rhoE        = @. rho * $e_SmoothVortex(xm, gamma, vortex_st, t, 0.0, u_inf, 0.0, R,
+                                               sigma,rho_infty,p_infty) + 0.5*(rhovx^2 + rhovy^2)/rho
                                 
         rho         = reshape(rho, size(x[1]))
         rhovx       = reshape(rhovx, size(x[1]))
