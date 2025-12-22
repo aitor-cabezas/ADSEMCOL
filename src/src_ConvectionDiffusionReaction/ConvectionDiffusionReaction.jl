@@ -50,7 +50,7 @@ mutable struct NCD <: ConvectionDiffusionModel
     #Mandatory fields:
     nVars           ::Int                 
     
-    SCD()           = new()
+    NCD()           = new()
     
 end
 
@@ -195,14 +195,14 @@ function FluxSource!(model::Oregonator, _qp::TrIntVars, ComputeJ::Bool)
 
     #Source terms:
     
-    source!(model, u, _qp.Q, _qp.dQ_du, ComputeJ)
+    Deltat_CFL_reac = source!(model, u, _qp.Q, _qp.dQ_du, ComputeJ)
 
     #CFL number:
     hp_min              = _hmin(_qp.Integ2D.mesh)./_qp.FesOrder * ones(1, _qp.nqp)
-    D_max               = @tturbo @. max(model.Du,model.Dw)
-    Deltat_CFL_lambda   = @. $minimum(hp_min/lambda)
+    D_max               = max(model.Du,model.Dw)
     Deltat_CFL_D        = @. $minimum(hp_min^2/D_max)
-    _qp.Deltat_CFL      = min(Deltat_CFL_lambda, Deltat_CFL_D)
+    Deltat_CFL_reac     = minimum(Deltat_CFL_reac)
+    _qp.Deltat_CFL      = min(Inf, Deltat_CFL_D,Deltat_CFL_reac)
 
     return
 

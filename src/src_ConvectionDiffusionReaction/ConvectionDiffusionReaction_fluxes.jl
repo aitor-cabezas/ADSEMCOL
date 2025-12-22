@@ -57,25 +57,33 @@ function source!(model::Oregonator, u::Vector{Matrix{Float64}}, Q::Vector{Matrix
         @tturbo @. dQ_du[3,2]   +=   f/epsilonv[3]
         @tturbo @. dQ_du[3,3]   +=   -1/epsilonv[3]*(u[1]+q)
        
-        # CFL_reac Computation
+        # Deltat_CFL_reac Computation
        
-        Aij_inf = zeros(nSpecies,nSpecies)
+        dQ_du_inf = zeros(size(u[1]))
        
-        for i=1:nSpecies,j=1:nSpecies
+        for i=1:nSpecies
 
-            Aij_inf[i,j] =   norm(dQ_du[i,j],Inf)
+            sum_i = zeros(size(u[1]))
+
+            for j=1:nSpecies
+
+               @tturbo @. sum_i += abs(dQ_du[i,j])
+
+            end
+
+            @tturbo @. dQ_du_inf = max(dQ_du_inf,sum_i)
 
         end
     
-        CFL_reac = norm(Aij_inf,Inf)
+        Deltat_CFL_reac =  @tturbo @. 1/dQ_du_inf
        
     else 
        
-        CFL_reac = NaN
+        Deltat_CFL_reac = NaN
         
     end
     
-    return CFL_reac
+    return Deltat_CFL_reac
     
 end
 
