@@ -28,7 +28,7 @@ mutable struct SCD <: ScalarConvectionDiffusion
     
 end
 
-function SCD(a::FWt21, epsilon::FWt21, Q::FWt21, 
+function SCD(a::FWt21, epsilon::FWt21, Q::FWt21,
     da_du::FWt21, depsilon_du::FWt21, dQ_du::FWt21)
 
     PD              = SCD()

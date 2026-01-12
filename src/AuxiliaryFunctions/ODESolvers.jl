@@ -183,8 +183,18 @@ function ESDIRK5_4_8L_2_SA()
     for ii=2:8
         Am[ii,1]    = bv[ii]-sum(Am[ii,2:ii])
     end
+
+    bhat        = zeros(8)
+    bhat[1]     = 701879993119/7084679725724
+    bhat[2]     = 701879993119/7084679725724
+    bhat[3]     = -8461269287478/14654112271769
+    bhat[4]     = 6612459227430/11388259134383
+    bhat[5]     = 2632441606103/12598871370240
+    bhat[6]     = -2147694411931/10286892713802
+    bhat[7]     = 4103061625716/6371697724583
+    bhat[8]     = 4103061625716/6371697724583
     
-    return Am
+    return Am,bhat
     
 end
 
@@ -621,7 +631,7 @@ function RK_Coefficients(RKMethod::String)
         RK.const_diag   = true
     elseif RKMETHOD=="KC58"
         #Not I-stable:
-        RK.AI           = ESDIRK5_4_8L_2_SA()
+        RK.AI, RK.bhatI = ESDIRK5_4_8L_2_SA()
         RK.AE           = NaN*RK.AI
         RK.order        = 5
         RK.GSA          = true

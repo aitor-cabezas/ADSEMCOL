@@ -87,17 +87,9 @@ function source!(model::Oregonator, u::Vector{Matrix{Float64}}, Q::Vector{Matrix
     
 end
 
-function NonlinearDiffusionFlux!(model::NonlinearDiffusion,u::Vector{Matrix{Float64}},udep::Vector{Matrix{Float64}},du::Matrix{Matrix{Float64}},flux::Matrix{Matrix{Float64}},dflux_du::Array{Matrix{Float64},3},ComputeJ::Bool)
-    
-    #Extract variables:
-    
-    nSpecies        = model.nSpecies
-    A               = model.A
-    B               = model.B
-    vx              = udep[DepVarIndex(model,"vx")]
-    vy              = udep[DepVarIndex(model,"vy")]
-    v               = [vx,vy]
-    DT              = udep[DepVarIndex(model,"DT")]  #Nonlinear Thermal Diffusion Coefficient  
+function NonlinearDiffusionFlux!(model::NCD,u::Vector{Matrix{Float64}},du::Matrix{Matrix{Float64}},flux::Matrix{Matrix{Float64}},dflux_du::Array{Matrix{Float64},3},dflux_dgradu::Array{Matrix{Float64},4},a::Vector{Matrix{Float64}},DT::Vector{Matrix{Float64}},dDT_du::Vector{Matrix{Float64}},ComputeJ::Bool)
+
+    nSpecies = 1
 
     ## Diffusion Flux
 
@@ -111,7 +103,7 @@ function NonlinearDiffusionFlux!(model::NonlinearDiffusion,u::Vector{Matrix{Floa
     
     for alpha = 1:nSpecies, i= 1:2
 
-        @tturbo @. flux[alpha,i]   +=   v[i]*u[alpha]
+        @tturbo @. flux[alpha,i]   +=   a[i]*u[alpha]
 
     end
     
@@ -119,27 +111,20 @@ function NonlinearDiffusionFlux!(model::NonlinearDiffusion,u::Vector{Matrix{Floa
        
        #dfconv/du
        
-       @tturbo @. dflux_du[1,1,1]   +=   v[1]
-       @tturbo @. dflux_du[1,2,1]   +=   v[2]
+       @tturbo @. dflux_du[1,1,1]   +=   a[1]
+       @tturbo @. dflux_du[1,2,1]   +=   a[2]
        
        #dfdiff/du
        
-       @tturbo @. dflux_du[1,1,1]   +=   -du[1,1]*(A+2B*u[1])
-       @tturbo @. dflux_du[1,2,1]   +=   -du[1,2]*(A+2B*u[1])
+       @tturbo @. dflux_du[1,1,1]   +=   -du[1,1]*dDT_du
+       @tturbo @. dflux_du[1,2,1]   +=   -du[1,2]*dDT_du
        
+       #dfdiff/dfdiffdgradu
        
+       @tturbo @. dflux_dgradu[1,1,1,1]   += -DT
+       @tturbo @. dflux_dgradu[1,2,1,2]   += -DT
         
     end
-    
-end
-
-function source!(model::NonlinearDiffusion,x::Vector{Matrix{Float64}},t::Float64, u::Vector{Matrix{Float64}},udep::Vector{Matrix{Float64}}, Q::Vector{Matrix{Float64}}, dQ_du::Matrix{Matrix{Float64}},ComputeJ::Bool)
-    
-    nSpecies        = model.nSpecies
-    vx              = udep[DepVarIndex(model,"vx")]
-    vy              = udep[DepVarIndex(model,"vy")]
-    v               = [vx,vy]
-    DT              = udep[DepVarIndex(model,"DT")]  #Nonlinear Thermal Diffusion Coefficient 
     
 end
 
@@ -163,4 +148,22 @@ function epsilonFlux!(model::Oregonator, tau::MFloat, duB::Matrix{MFloat},
     
     return
     
+end
+
+function SSDiffusiveFlux!(model::NCD, DTSS::MFloat, dDT_du::MFloat,
+                        u::Vector{MFloat}, du::Matrix{MFloat},
+                        ComputeJ::Bool, flux::Matrix{MFloat}, dflux_du::Array{MFloat,3},
+                        dflux_dgradu::Array{MFloat,4}) where MFloat<:Matrix{Float64}
+
+@mlv flux[1,1]  -= DTSS*du[1,1]
+@mlv flux[1,2]  -= DTSS*du[1,2]
+if ComputeJ #&& false
+    @mlv dflux_du[1,1,1]        -= dDT_du*du[1,1]
+    @mlv dflux_du[1,2,1]        -= dDT_du*du[1,2]
+    @mlv dflux_dgradu[1,1,1,1]  -= DTSS
+    @mlv dflux_dgradu[1,2,1,2]  -= DTSS
+end
+
+return
+
 end

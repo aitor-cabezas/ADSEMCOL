@@ -30,18 +30,13 @@ abstract type ConvectionDiffusionModel <: ConstModels end
 
 mutable struct NCD <: ConvectionDiffusionModel
 
-    #Model's characteristic fields. These functions receive (t,[x1,x2],[u]) and return
-    a               ::FWt21                     #Returns velocity [a1, a2]
-    epsilon         ::FWt21                     #Returns viscosity coefficient [epsilon]
-    Q               ::FWt21                     #Returns source [Q]
-    A               ::Float64           
-    B               ::Float64          
-    DT0             ::Float64           
-    
-    #Functions to compute the jacobians:
-    da_du           ::FWt21
-    depsilon_du     ::FWt21
-    dQ_du           ::FWt21
+    #Model's characteristic fields (nonlinear diffusion).
+    a               ::FWt21                       #Returns velocity [vx, vy]
+    da_du           ::FWt21                       #Function to compute the jacobians
+    DT              ::FWt21                       #Returns thermal diffusion DT(u)
+    dDT_du          ::FWt21                       #Function to compute the jacobians
+    Q               ::FWt21                       #Returns source term
+    dQ_du           ::FWt21                       #Function to compute the jacobians
     
     #Stabilization variables:
     CSS             ::Float64   #Subgrid stabilization
@@ -54,26 +49,20 @@ mutable struct NCD <: ConvectionDiffusionModel
     
 end
 
-Base.@kwdef mutable struct NonlinearDiffusion <: ConvectionDiffusionModel
+function NCD(a::FWt21,da_du::FWt21,DT::FWt21,dDT_du::FWt21,Q::FWt21,dQ_du::FWt21)
 
-    #Model's characteristic fields:
-    A               ::Float64           = 1.0
-    B               ::Float64           = 1.0
-    DT0             ::Float64           = 1.0
-    delta           ::Float64           = 1e-6
-    nSpecies        ::Int64             = 1
-    CSS             ::Float64           = 0.1   #Subgrid stabilization
-    CW              ::Float64           = 50.0  #Boundary penalty (50.0-200.0 for IIPG)
+    NCDS              = NCD()
+    NCDS.a            = a
+    NCDS.da_du        = da_du
+    NCDS.DT           = DT
+    NCDS.dDT_du       = dDT_du
+    NCDS.Q            = Q
+    NCDS.dQ_du        = dQ_du
+    NCDS.CSS          = 0.1
+    NCDS.CW           = 50.0
+    NCDS.nVars        = 1
 
-    #Mandatory fields:
-    nVars           ::Int               = 1
-    
-    #Dependent variables. NOTE: DepVars contains variables to be evaluated when
-    #Jacobian is not necessary. DepVarsJ contains variables to be evaluated when
-    #Jacobian is to be computed. Variables in DepVars and DepVarsJ must be sorted in 
-    #the same way.
-    
-    DepVarsJ         ::Vector{String}    = ["vx", "vy", "DT"]
+    return NCDS
 
 end
 
@@ -91,65 +80,38 @@ end
 #--------------------------------------------------------------------------------
 #Auxiliary Functions
 
+include("../src_ConvectionDiffusionReaction/ConvectionDiffusionReaction_fluxes.jl")
+include("../src_ConvectionDiffusionReaction/ConvectionDiffusionReaction_BC.jl")
 
+function DepVars(model::NCD, t::Float64, x::Vector{<:AMF64}, u::Vector{<:AMF64},vout::Vector{String})
 
-#Return index corresponding to dependent variable "var":
-function DepVarIndex(model::ConvectionDiffusionModel, var::String)
-    return findfirst(model.DepVarsJ.==var)
-end
-
-function DepVars(model::NonlinearDiffusion, t::Float64, x::Vector{Matrix{Float64}},
-                 u::Vector{Matrix{Float64}}, vout::Vector{String})
-        
-        nSpecies    =   model.nSpecies
-        A           =   model.A
-        B           =   model.B
-        DT0         =   model.DT0
-            
-        DT          =   @tturbo @. DT0 + A*(u[alpha]) + B*(u[alpha]*u[alpha])
-        vx          =   @tturbo @. (8*pi/25)*sin((pi*x[1])/25)*sin((pi*x[2])/25)
-        vy          =   @tturbo @. (8*pi/25)*cos((pi*x[1])/25)*cos((pi*x[2])/25)
-
-        nout        = length(vout)
-        xout        = Vector{Matrix{Float64}}(undef, nout)
-        
-        for ivar in eachindex(vout)
-            
-            vble    = vout[ivar]
-            
-            if vble=="DT"
-                
-                    xout[ivar]      = DT
-                    
-            elseif vble=="vx"
-                
-                    xout[ivar]      = vx
-                    
-            elseif vble=="vy"
-                
-                    xout[ivar]      = vy
-
-            else
-                
-                error("Variable $(vble) not supported")
-                
-            end  
-        
+    nout        = length(vout)
+    xout        = Vector{Vector{Matrix{Float64}}}(undef,nout)
+    for ivar in eachindex(vout)
+        vble    = vout[ivar]
+        if vble=="u"
+            xout[ivar]  = [ copy(u[1]) ]
+            elseif vble=="lambda_max"
+            a           = model.a(x,t,u)
+            da_du       = model.da_du(x,t,u)
+            #ahat_i = d(a_i u)/du = da_i/du * u + a_i
+            lambda      = @tturbo @. sqrt( (da_du[1]*u[1]+a[1])^2 + (da_du[2]*u[1]+a[2])^2 )
+            xout[ivar]  = [ lambda ]
+        else
+            error("Variable $(vble) not supported")
         end
-        
-        return xout
-            
-            
+    end
+
+    return xout
+
 end
+
 
 
 
 
 #-------------------------------------------------------------------------------
 #MANDATORY FUNCTIONS:
-
-include("../src_ConvectionDiffusionReaction/ConvectionDiffusionReaction_fluxes.jl")
-include("../src_ConvectionDiffusionReaction/ConvectionDiffusionReaction_BC.jl")
 
 #Compute normalization factors from solution. Mass matrix has already been computed.
 
@@ -208,41 +170,55 @@ function FluxSource!(model::Oregonator, _qp::TrIntVars, ComputeJ::Bool)
 
 end
 
-
-
-function FluxSource!(model::NonlinearDiffusion, _qp::TrIntVars, ComputeJ::Bool)
+#Function to evaluate flux and source terms at quadrature nodes:
+function FluxSource!(model::NCD, _qp::TrIntVars, ComputeJ::Bool)
 
     t               = _qp.t
     x               = _qp.x
     u               = _qp.u
     du              = _qp.gradu
     duB             = _qp.graduB
+    metric          = _qp.Integ2D.mesh.metric
 
-    #Terms due to convection-diffusion flux
-    NonlinearDiffusionFlux!(model, u, du, _qp.f, _qp.df_du, _qp.df_dgradu, ComputeJ)
+    #Natural viscosity:
+    a                       = model.a(x,t,u)
+    da_du                   = Vector{Matrix{Float64}}(undef,2)
+    lambda_max              = DepVars(model,t,x,u,["lambda_max"])[1][1]
+    DT                      = model.DT(x,t,u)[1]
+    dDT_du                  = zeros(0,0)
+    if ComputeJ
+        da_du               = model.da_du(x,t,u)
+        dDT_du              = model.dDT_du(x,t,u)[1]
+    end
 
-    #Subgrid stabilization - monolithic diffusion:
-    lambda          = 0.0
-    #     h_Elems         = _hElems(_qp.Integ2D.mesh)
-    A_Elems         = areas(_qp.Integ2D.mesh)
-    h_Elems         = @tturbo @. sqrt(A_Elems)
-    hp              = h_Elems./_qp.FesOrder * ones(1, _qp.nqp)
-    tau             = @mlv model.CSS*lambda*hp
-    epsilonFlux!(model, tau, duB, ComputeJ, _qp.fB, _qp.dfB_dgraduB)
+    #Nonlinear convective and diffusive fluxes:
 
-    #Source terms:
+    NonlinearDiffusionFlux!(model, u, du, _qp.f, _qp.df_du, _qp.df_dgradu,a,DT,dDT_du,ComputeJ)
 
-    source!(model, u, _qp.Q, _qp.dQ_du,_qp.dQ_dgradu, ComputeJ)
+    #Evaluate subgrid stabilization flux:
+    A_Elems             = areas(_qp.Integ2D.mesh)
+    h_Elems             = @tturbo @. sqrt(A_Elems)
+    hp                  = h_Elems./_qp.FesOrder * ones(1, _qp.nqp)
+    DTSS                = @tturbo @. model.CSS*lambda_max*hp
+    if ComputeJ
+        @tturbo @. dDT_du        = model.dDT_du(x,t,u)[1]
+        #         @avxt @. depsilon_du        = model.CSS*hp * (a[1]*da_du[1]+a[2]*da_du[2])/anorm
+    end
+    SSDiffusiveFlux!(model, DTSS, dDT_du, u, duB, ComputeJ,_qp.fB, _qp.dfB_du, _qp.dfB_dgraduB)
 
-    #     #CFL number:
-    #     hp_min              = _hmin(_qp.Integ2D.mesh)./_qp.FesOrder * ones(1, _qp.nqp)
-    #     D_max               = @mlv max(epsilon, nu, beta, kappa_rho_cv)
-    #     Deltat_CFL_lambda   = @. $minimum(hp_min/lambda)
-    #     Deltat_CFL_D        = @. $minimum(hp_min^2/D_max)
-    #     _qp.Deltat_CFL      = min(Deltat_CFL_lambda, Deltat_CFL_D)
+    #Evaluate source terms:
+    _qp.Q[1]            .= model.Q(x,t,u)[1]
+    if ComputeJ
+        _qp.dQ_du[1]    .= model.dQ_du(x,t,u)[1]
+    end
+
+    #Deltat imposed by CFL=1 (do not use @avxt, it does not work well with $ symbol)
+    hp_min              = _hmin(_qp.Integ2D.mesh)./_qp.FesOrder * ones(1, _qp.nqp)
+    Deltat_CFL_a        = @. $minimum(hp_min/lambda_max)
+    Deltat_CFL_DT       = @. $minimum(hp_min^2/DT)
+    _qp.Deltat_CFL      = min(Deltat_CFL_a, Deltat_CFL_DT)
 
     return
 
 end
-
 
