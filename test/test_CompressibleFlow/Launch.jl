@@ -30,7 +30,7 @@ try
         u_inf                = parse(Float64,ARGS[11])
         gamma                = parse(Float64,ARGS[12])
         SC                   = parse(Int64,ARGS[13])
-        SmoothVortex(TMSName=TMSName,RoWMethod=RoWMethod,RKMethod=RKMethod,tf=tf,Deltat0=Deltat0,TolT=TolT,hp=hp,TolS=TolS,vortex_st=vortex_st,u_inf=u_inf,gamma=gamma,SC=SC,SaveRes=true,TimeAdapt=true)
+        SmoothVortex(TMSName=TMSName,RoWMethod=RoWMethod,RKMethod=RKMethod,tf=tf,Deltat0=Deltat0,TolT=TolT,hp=hp,TolS=TolS,vortex_st=vortex_st,u_inf=u_inf,gamma=gamma,SC=SC,SaveRes=true,TimeAdapt=false)
         
     else
         error("Undefined problem $(ProblemName)")

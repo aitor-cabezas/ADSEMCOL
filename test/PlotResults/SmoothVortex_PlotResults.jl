@@ -812,8 +812,17 @@ function CompareTMS_SmoothVortex(StudyCase::String;
                         
         nb          = 1
         
-    end
+     end
+        
+    if StudyCase=="KC58_TEST"
     
+        #TimeAdapt:NO
+        SCvv1       = [1048:1051]
+                        
+        nb          = 1
+        
+    end
+        
     #------------------------------------------------------------
     
     Deltatvv1, errvv1, etavv1,tCPUvv1, CFLvv1,TIMethodNamevv1 = GetVbles(SCvv1, ["Deltat", "errL2L2", "etaL2L2","tCPU","CFLmax", "TIMethodName"], nb=nb)
