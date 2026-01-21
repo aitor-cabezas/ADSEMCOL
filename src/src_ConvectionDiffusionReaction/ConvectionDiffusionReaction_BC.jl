@@ -25,7 +25,8 @@ end
 #Dirichlet Conditions
 
 function bflux!(model::NCD, BC::Dirichlet, _bqp::TrBintVars, ComputeJ::Bool)
-    
+        
+        t                       =   _bqp.t
         nb                      =   _bqp.nb
         x                       =   _bqp.x
         u                       =   _bqp.u
@@ -39,16 +40,16 @@ function bflux!(model::NCD, BC::Dirichlet, _bqp::TrBintVars, ComputeJ::Bool)
         duBC_du[1,1]            = zeros(size(u[1]))
 
         #Hyperbolic term:
-        a                           = model.a(x,t,u)
+        a                           = model.a(t,x,u)
         a_n                         = @tturbo @. a[1]*nb[1]+a[2]*nb[2]
-        da_du                       = model.da_du(x,t,u)
+        da_du                       = model.da_du(t,x,u)
         ahat_1                      = @tturbo @. da_du[1]*u[1] + a[1]
         ahat_2                      = @tturbo @. da_du[2]*u[1] + a[2]
         ahat_n                      = @tturbo @. ahat_1*nb[1] + ahat_2*nb[2]
         inflow                      = @tturbo @. ahat_n <= 0.0
         outflow                     = @tturbo @. !inflow
         #
-        aBC                             = model.a(x,t,uBC)
+        aBC                             = model.a(t,x,uBC)
         aBC_n                           = @tturbo @. aBC[1]*nb[1] + aBC[2]*nb[2]
         @tturbo @. _bqp.f[1][inflow]    += aBC_n[inflow]*uBC[1][inflow]
         @tturbo @. _bqp.f[1][outflow]   += a_n[outflow]*u[1][outflow]
@@ -62,10 +63,10 @@ function bflux!(model::NCD, BC::Dirichlet, _bqp::TrBintVars, ComputeJ::Bool)
         DT, dDT_du, dDT_dgradu = ViscosityAllocate(1, size(u[1]), ComputeJ)
 
         #Natural viscosity:
-        DT                             = model.DT(x,t,u)[1]
-        dDT_du                         = zeros(0,0)
+        DT                             = model.DT(t,x,u)
+        dDT_du                         = Vector{Matrix{Float64}}() 
         if ComputeJ
-            dDT_du                     = model.dDT_du(x,t,u)[1]
+            dDT_du                     = model.dDT_du(t,x,u)
         end
 
         #Extrapolate natural viscous flux:
@@ -81,7 +82,7 @@ function bflux!(model::NCD, BC::Dirichlet, _bqp::TrBintVars, ComputeJ::Bool)
         #Add penalty terms:
         h_Elems                 = @mlv 1.0/sqrt(metric.lambda_bar[ParentElems])
         hp                      = h_Elems./_bqp.FesOrder * ones(1, _bqp.nqp)
-        sigma                   = @mlv model.CW * DT / hp
+        sigma                   = @mlv model.CW .* DT[1] ./ hp
         penalty!(model, sigma, u, uBC, duBC_du, ComputeJ, _bqp.f, _bqp.df_du)
 
         return

@@ -185,7 +185,7 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
             legend(["space", "time", "algebraic"])
             xlabel(L"t")
             if SaveFig && solver.t==tf
-                savefig("$(VideosUbi)TriplePoint_Errors$(SC)_$(nb_SaveFig).png", dpi=400, pad_inches=0)
+                savefig("$(VideosUbi)Oregonator_errors$(SC)_$(nb_SaveFig).png", dpi=400, pad_inches=0)
             end
 
             t_lastFig           += Deltat_SaveFig

@@ -7,7 +7,7 @@ function vx_SmoothVortex(xm::Array{Float64,2},gamma::Float64,beta::Float64,
     xvortex::Float64,yvortex::Float64,uinfty::Float64,vinfty::Float64,R::Float64,sigma::Float64,ainfty::Float64)
 
     r2v     = @views @. (xm[:,1]-xvortex)^2+(xm[:,2]-yvortex)^2
-    vx      = uinfty .- ainfty.* @views xm[:,2] ./ R .* beta .* exp.(-r2v ./ (2*sigma^2 * R^2))
+    vx      = uinfty .- ainfty.*(xm[:,2] .- yvortex)./ R .* beta .* exp.(-r2v ./ (2*sigma^2 * R^2))
 
     return  vx
 
@@ -15,7 +15,7 @@ end
 function vy_SmoothVortex(xm::Array{Float64,2},gamma::Float64,beta::Float64, xvortex::Float64,yvortex::Float64,uinfty::Float64,vinfty::Float64,R::Float64,sigma::Float64,ainfty::Float64)
 
     r2v     = @views @. (xm[:,1]-xvortex)^2+(xm[:,2]-yvortex)^2
-    vy      = vinfty .+ ainfty.* @views xm[:,1] ./ R .* beta .* exp.(-r2v ./ (2*sigma^2 * R^2))
+    vy      = vinfty .+ ainfty.*(xm[:,1] .- xvortex)./ R .* beta .* exp.(-r2v ./ (2*sigma^2 * R^2))
     return  vy
 
 end

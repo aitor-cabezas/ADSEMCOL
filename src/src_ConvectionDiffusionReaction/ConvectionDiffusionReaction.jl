@@ -83,7 +83,7 @@ end
 include("../src_ConvectionDiffusionReaction/ConvectionDiffusionReaction_fluxes.jl")
 include("../src_ConvectionDiffusionReaction/ConvectionDiffusionReaction_BC.jl")
 
-function DepVars(model::NCD, t::Float64, x::Vector{<:AMF64}, u::Vector{<:AMF64},vout::Vector{String})
+function DepVars(model::NCD, t::Float64, x::Vector{Matrix{Float64}}, u::Vector{Matrix{Float64}},vout::Vector{String})
 
     nout        = length(vout)
     xout        = Vector{Vector{Matrix{Float64}}}(undef,nout)
@@ -92,8 +92,8 @@ function DepVars(model::NCD, t::Float64, x::Vector{<:AMF64}, u::Vector{<:AMF64},
         if vble=="u"
             xout[ivar]  = [ copy(u[1]) ]
             elseif vble=="lambda_max"
-            a           = model.a(x,t,u)
-            da_du       = model.da_du(x,t,u)
+            a           = model.a(t,x,u)
+            da_du       = model.da_du(t,x,u)
             #ahat_i = d(a_i u)/du = da_i/du * u + a_i
             lambda      = @tturbo @. sqrt( (da_du[1]*u[1]+a[1])^2 + (da_du[2]*u[1]+a[2])^2 )
             xout[ivar]  = [ lambda ]
@@ -181,14 +181,14 @@ function FluxSource!(model::NCD, _qp::TrIntVars, ComputeJ::Bool)
     metric          = _qp.Integ2D.mesh.metric
 
     #Natural viscosity:
-    a                       = model.a(x,t,u)
+    a                       = model.a(t,x,u)
     da_du                   = Vector{Matrix{Float64}}(undef,2)
     lambda_max              = DepVars(model,t,x,u,["lambda_max"])[1][1]
-    DT                      = model.DT(x,t,u)[1]
-    dDT_du                  = zeros(0,0)
+    DT                      = model.DT(t,x,u)
+    dDT_du                  = Vector{Matrix{Float64}}() 
     if ComputeJ
-        da_du               = model.da_du(x,t,u)
-        dDT_du              = model.dDT_du(x,t,u)[1]
+        da_du               = model.da_du(t,x,u)
+        dDT_du              = model.dDT_du(t,x,u)
     end
 
     #Nonlinear convective and diffusive fluxes:
@@ -199,23 +199,24 @@ function FluxSource!(model::NCD, _qp::TrIntVars, ComputeJ::Bool)
     A_Elems             = areas(_qp.Integ2D.mesh)
     h_Elems             = @tturbo @. sqrt(A_Elems)
     hp                  = h_Elems./_qp.FesOrder * ones(1, _qp.nqp)
-    DTSS                = @tturbo @. model.CSS*lambda_max*hp
+    DTSS                = [@tturbo @. model.CSS*lambda_max*hp]
     if ComputeJ
-        @tturbo @. dDT_du        = model.dDT_du(x,t,u)[1]
+        dDT_du        = model.dDT_du(t,x,u)
         #         @avxt @. depsilon_du        = model.CSS*hp * (a[1]*da_du[1]+a[2]*da_du[2])/anorm
     end
+    
     SSDiffusiveFlux!(model, DTSS, dDT_du, u, duB, ComputeJ,_qp.fB, _qp.dfB_du, _qp.dfB_dgraduB)
 
     #Evaluate source terms:
-    _qp.Q[1]            .= model.Q(x,t,u)[1]
+    _qp.Q[1]            .= model.Q(t,x,u)[1]
     if ComputeJ
-        _qp.dQ_du[1]    .= model.dQ_du(x,t,u)[1]
+        _qp.dQ_du[1]    .= model.dQ_du(t,x,u)[1]
     end
 
     #Deltat imposed by CFL=1 (do not use @avxt, it does not work well with $ symbol)
-    hp_min              = _hmin(_qp.Integ2D.mesh)./_qp.FesOrder * ones(1, _qp.nqp)
-    Deltat_CFL_a        = @. $minimum(hp_min/lambda_max)
-    Deltat_CFL_DT       = @. $minimum(hp_min^2/DT)
+    hp_min              = _hmin(_qp.Integ2D.mesh)./_qp.FesOrder .* ones(1, _qp.nqp)
+    Deltat_CFL_a        = minimum(hp_min ./ lambda_max)
+    Deltat_CFL_DT       = minimum((hp_min.^2) ./DT[1])
     _qp.Deltat_CFL      = min(Deltat_CFL_a, Deltat_CFL_DT)
 
     return

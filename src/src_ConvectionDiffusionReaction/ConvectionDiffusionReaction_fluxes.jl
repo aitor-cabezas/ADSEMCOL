@@ -95,7 +95,7 @@ function NonlinearDiffusionFlux!(model::NCD,u::Vector{Matrix{Float64}},du::Matri
 
     for alpha = 1:nSpecies, i= 1:2
 
-        @tturbo @. flux[alpha,i]   +=   -DT*du[alpha,i]
+        @tturbo @. flux[alpha,i]   +=   -DT[1]*du[alpha,i]
 
     end
     
@@ -116,13 +116,13 @@ function NonlinearDiffusionFlux!(model::NCD,u::Vector{Matrix{Float64}},du::Matri
        
        #dfdiff/du
        
-       @tturbo @. dflux_du[1,1,1]   +=   -du[1,1]*dDT_du
-       @tturbo @. dflux_du[1,2,1]   +=   -du[1,2]*dDT_du
+       @tturbo @. dflux_du[1,1,1]   +=   -du[1,1]*dDT_du[1]
+       @tturbo @. dflux_du[1,2,1]   +=   -du[1,2]*dDT_du[1]
        
        #dfdiff/dfdiffdgradu
        
-       @tturbo @. dflux_dgradu[1,1,1,1]   += -DT
-       @tturbo @. dflux_dgradu[1,2,1,2]   += -DT
+       @tturbo @. dflux_dgradu[1,1,1,1]   += -DT[1]
+       @tturbo @. dflux_dgradu[1,2,1,2]   += -DT[1]
         
     end
     
@@ -150,20 +150,21 @@ function epsilonFlux!(model::Oregonator, tau::MFloat, duB::Matrix{MFloat},
     
 end
 
-function SSDiffusiveFlux!(model::NCD, DTSS::MFloat, dDT_du::MFloat,
+function SSDiffusiveFlux!(model::NCD, DTSS::Vector{MFloat}, dDT_du::Vector{MFloat},
                         u::Vector{MFloat}, du::Matrix{MFloat},
                         ComputeJ::Bool, flux::Matrix{MFloat}, dflux_du::Array{MFloat,3},
                         dflux_dgradu::Array{MFloat,4}) where MFloat<:Matrix{Float64}
 
-@mlv flux[1,1]  -= DTSS*du[1,1]
-@mlv flux[1,2]  -= DTSS*du[1,2]
-if ComputeJ #&& false
-    @mlv dflux_du[1,1,1]        -= dDT_du*du[1,1]
-    @mlv dflux_du[1,2,1]        -= dDT_du*du[1,2]
-    @mlv dflux_dgradu[1,1,1,1]  -= DTSS
-    @mlv dflux_dgradu[1,2,1,2]  -= DTSS
-end
+     flux[1,1]  .-= DTSS[1].*du[1,1]
+     flux[1,2]  .-= DTSS[1].*du[1,2]
+    
+    if ComputeJ #&& false
+        dflux_du[1,1,1]        .-= dDT_du[1].*du[1,1]
+        dflux_du[1,2,1]        .-= dDT_du[1].*du[1,2]
+        dflux_dgradu[1,1,1,1]  .-= DTSS[1]
+        dflux_dgradu[1,2,1,2]  .-= DTSS[1]
+    end
 
-return
+    return
 
 end
