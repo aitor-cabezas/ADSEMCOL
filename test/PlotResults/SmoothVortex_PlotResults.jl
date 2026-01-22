@@ -822,6 +822,50 @@ function CompareTMS_SmoothVortex(StudyCase::String;
         nb          = 1
         
     end
+    
+     if StudyCase=="M1a"
+    
+        #TimeAdapt:YES
+        SCvv1       = [1052:1055, 
+                       1056:1059, 
+                       1060:1063,
+                       1064:1067,
+                       1068:1071,
+                       1072:1075]
+        
+        nb          = 1
+        
+     end
+     
+     if StudyCase=="M1b"
+    
+        #TimeAdapt:NO
+        
+        SCvv1       = [1076:1079, 
+                       1080:1083, 
+                       1084:1087,
+                       1088:1091,
+                       1092:1095,
+                       1096:1099]
+        
+        nb          = 1
+        
+     end
+     
+     if StudyCase=="M2a"
+    
+        #TimeAdapt:Yes
+        
+        SCvv1       = [1100:1103, 
+                       1104:1107, 
+                       1108:1111,
+                       1112:1115,
+                       1116:1119,
+                       1120:1123]
+        
+        nb          = 1
+        
+     end
         
     #------------------------------------------------------------
     
