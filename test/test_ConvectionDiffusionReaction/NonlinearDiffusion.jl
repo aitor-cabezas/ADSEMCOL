@@ -229,9 +229,10 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
 
     #Compute initial condition:
     ConvFlag            = LIRKHyp_InitialCondition!(solver)
-#         CheckJacobian(solver, Plot_dQ_du=true, Plot_df_dgradu=true,Plot_df_du=true,Plot_dQ_dgradu=true)
-#         BC_CheckJacobian(solver, 4, Plot_df_du=true, Plot_df_dgradu=true)
-#         return
+    
+#     CheckJacobian(solver, Plot_dQ_du=true, Plot_df_dgradu=true,Plot_df_du=true,Plot_dQ_dgradu=true)
+#     BC_CheckJacobian(solver, 4, Plot_df_du=true, Plot_df_dgradu=true)
+#     return
 
     #Change TolT:
     if TolT==0.0
@@ -308,9 +309,16 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
  #-----------------------------------------------------------------------------
     #MARCH IN TIME:
     
-    while solver.t<tf
+    N=0
     
+    while solver.t<tf
+        N+=1
         ConvFlag            = LIRKHyp_Step!(solver)
+        if N ==100
+            CheckJacobian(solver, Plot_dQ_du=true, Plot_df_dgradu=true,Plot_df_du=true,Plot_dQ_dgradu=true)
+            BC_CheckJacobian(solver, 4, Plot_df_du=true, Plot_df_dgradu=true)
+            N=0
+        end
         if ConvFlag<=0
             break
         end

@@ -27,10 +27,12 @@ try
         hp                   = parse(Float64,ARGS[8])
         TolS                 = parse(Float64,ARGS[9])
         vortex_st            = parse(Float64,ARGS[10])
-        u_inf                = parse(Float64,ARGS[11])
-        gamma                = parse(Float64,ARGS[12])
-        SC                   = parse(Int64,ARGS[13])
-        SmoothVortex(TMSName=TMSName,RoWMethod=RoWMethod,RKMethod=RKMethod,tf=tf,Deltat0=Deltat0,TolT=TolT,hp=hp,TolS=TolS,vortex_st=vortex_st,u_inf=u_inf,gamma=gamma,SC=SC,SaveRes=true,TimeAdapt=false)
+        a_infty              = parse(Float64,ARGS[11])
+        u_inf                = parse(Float64,ARGS[12])
+        gamma                = parse(Float64,ARGS[13])
+        TimeAdapt            = parse(Bool,ARGS[14])
+        SC                   = parse(Int64,ARGS[15])
+        SmoothVortex(TMSName=TMSName,RoWMethod=RoWMethod,RKMethod=RKMethod,tf=tf,Deltat0=Deltat0,TolT=TolT,hp=hp,TolS=TolS,vortex_st=vortex_st,a_infty=a_infty,u_inf=u_inf,gamma=gamma,TimeAdapt=TimeAdapt,SC=SC,SaveRes=true)
         
     else
         error("Undefined problem $(ProblemName)")
