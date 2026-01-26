@@ -7,7 +7,7 @@
 # Editable options:
 #SBATCH --job-name=SmoothVortex
 #SBATCH --partition=cn2
-#SBATCH --array=173-196%10
+#SBATCH --array=221-244%10
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=20G
 
