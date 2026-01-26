@@ -20,12 +20,12 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
     
     #Mesh:
     MeshFile                = "$(@__DIR__)/../../temp/Oregonator_SC$(SC).geo"
-    NX                      = Int(ceil(100.0/(hp*FesOrder)))
-    NY                      = Int(ceil(100.0/(hp*FesOrder)))
+    NX                      = Int(ceil(10.0/(hp*FesOrder)))
+    NY                      = Int(ceil(10.0/(hp*FesOrder)))
     x1                      = 0.0
-    x2                      = 100.0
+    x2                      = 10.0
     y1                      = 0.0
-    y2                      = 100.0
+    y2                      = 10.0
     TrMesh_Rectangle_Create!(MeshFile, x1, x2, NX, y1, y2, NY)
     
     #Load LIRKHyp solver structure with default data. Modify the default data if necessary:
@@ -66,12 +66,12 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
     
     function u0_Oregonator(x::Vector{Matrix{Float64}})
         
-        xc                  =   (x2-x1)/2
-        yc                  =   (y2-y1)/2
+#         xc                  =   (x2-x1)/2
+#         yc                  =   (y2-y1)/2
         xr                  =   @view x[1][:]
         yr                  =   @view x[2][:]
-        rxy                 =   similar(xr) 
-        @tturbo @. rxy      =   sqrt((xr-xc)^2 + (yr-yc)^2)
+#         rxy                 =   similar(xr) 
+#         @tturbo @. rxy      =   sqrt((xr-xc)^2 + (yr-yc)^2)
         
         #Anderson's method to obtain the equilibrium solution u*
         
@@ -100,7 +100,7 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
         u_in             =   zeros(length(x[1]))
         v_in             =   zeros(length(x[1]))
         w_in             =   zeros(length(x[1]))
-        @tturbo @. u_in  +=  ueq + A*exp(-(rxy*rxy)/(2*sigma*sigma))
+        @tturbo @. u_in  +=  ueq + A*sin(0.1*xr)*sin(0.1*yr)
         @tturbo @. v_in  +=  u_in
         @tturbo @. w_in  +=  (phi+f*v_in)/(u_in+q)
         

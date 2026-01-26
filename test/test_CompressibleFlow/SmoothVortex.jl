@@ -47,9 +47,9 @@ function SmoothVortex(; hp::Float64=1.0, FesOrder::Int=5, tf::Float64 = 0.1,
     BC_horiz        = SlipAdiabatic()
     function uLeft(t::Float64, x::Vector{Matrix{Float64}})
         
-        rho         = @mlv 0.0*x[1]+1.0
-        rhovx       = @mlv 0.0*x[1]+1.0
-        rhovy       = @mlv 0.0*x[1]
+        rho         = @mlv 0.0*x[1]+ rho_infty
+        rhovx       = @mlv 0.0*x[1]+ rho_infty*u_inf
+        rhovy       = @mlv 0.0*x[1]+ rho_infty*v_inf
         
         return [rho, rhovx, rhovy]
         
@@ -57,7 +57,7 @@ function SmoothVortex(; hp::Float64=1.0, FesOrder::Int=5, tf::Float64 = 0.1,
     BC_left         = SubsonicInlet1(FWt11((t,x)->uLeft(t,x)))
     function uRight(t::Float64, x::Vector{Matrix{Float64}})
         
-        p           = @mlv 0.0*x[1]+1.0
+        p           = @mlv 0.0*x[1]+(rho_infty/gamma)*(a_infty)^2
         return [p]
         
     end
