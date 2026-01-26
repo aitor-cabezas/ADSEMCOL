@@ -886,9 +886,9 @@ function CompareTMS_SmoothVortex(StudyCase::String;
     
         #TimeAdapt:YES
         
-        SCvv1       = [1148:1151, 
+        SCvv1       = [1149:1151, 
                        1152:1155, 
-                       1156:1159,
+                       1157:1159,
                        1160:1163,
                        1164:1167,
                        1168:1171]
@@ -916,7 +916,7 @@ function CompareTMS_SmoothVortex(StudyCase::String;
     
         #TimeAdapt:NO
         
-        SCvv1       = [1196:1199, 
+        SCvv1       = [1197:1199, 
                        1200:1203, 
                        1204:1207,
                        1208:1211,
