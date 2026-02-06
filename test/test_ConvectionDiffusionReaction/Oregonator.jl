@@ -1,6 +1,6 @@
 include("test_ConvectionDiffusionReaction.jl")
 
-function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",PlotVars::Vector{String}= ["u","v","w"], PlotCode::Vector{String}=fill("nodes", length(PlotVars)), PlotFig::Bool=true, Deltat_SaveFig::Float64=0.01, SaveFig::Bool=false, wFig::Float64=9.50, hFig::Float64=6.50, mFig::Int=max(1,length(PlotCode)), nFig::Int=Int(ceil(length(PlotCode)/mFig)), Nt_SaveFig::Int=typemax(Int), cmap::String="jet",SC::Int=0, CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0, phi::Float64=0.0025,epsilon::Float64= 1/8,epsilonp::Float64= 1/720,Du::Float64=1.0,Dw::Float64=1.12,q::Float64 = 0.002,f::Float64=1.8,A::Float64=0.5,sigma::Float64=5.0,  Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3,AMA_SizeOrder::Int=FesOrder,AMA_AnisoOrder::Int=2,AMA_ProjN::Int=1,AMA_ProjOrder::Int=0,SpaceAdapt::Bool=true, TimeAdapt::Bool=true,SaveRes::Bool=false, Nt_SaveRes::Int=typemax(Int), Deltat_SaveRes::Float64=0.01)
+function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",PlotVars::Vector{String}= ["u","v","w"], PlotCode::Vector{String}=fill("nodes", length(PlotVars)), PlotFig::Bool=true, Deltat_SaveFig::Float64=0.01, SaveFig::Bool=false, wFig::Float64=9.50, hFig::Float64=6.50, mFig::Int=max(1,length(PlotCode)), nFig::Int=Int(ceil(length(PlotCode)/mFig)), Nt_SaveFig::Int=typemax(Int), cmap::String="jet",SC::Int=0, CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0, phi::Float64=0.0025,epsilon::Float64= 1/8,epsilonp::Float64= 1/720,Du::Float64=1.0,Dw::Float64=1.12,q::Float64 = 0.002,f::Float64=1.8,A::Float64=1e-3,sigma::Float64=5.0,  Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3,AMA_SizeOrder::Int=FesOrder,AMA_AnisoOrder::Int=2,AMA_ProjN::Int=1,AMA_ProjOrder::Int=0,SpaceAdapt::Bool=true, TimeAdapt::Bool=true,SaveRes::Bool=false, Nt_SaveRes::Int=typemax(Int), Deltat_SaveRes::Float64=0.01)
     
     
     #---------------------------------------------------------------------
@@ -20,12 +20,12 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
     
     #Mesh:
     MeshFile                = "$(@__DIR__)/../../temp/Oregonator_SC$(SC).geo"
-    NX                      = Int(ceil(10.0/(hp*FesOrder)))
-    NY                      = Int(ceil(10.0/(hp*FesOrder)))
-    x1                      = 0.0
-    x2                      = 10.0
-    y1                      = 0.0
-    y2                      = 10.0
+    NX                      = Int(ceil(2*3.1416/(hp*FesOrder)))
+    NY                      = Int(ceil(2*3.1416/(hp*FesOrder)))
+    x1                      = -3.1416
+    x2                      = 3.1416
+    y1                      = -3.1416
+    y2                      = 3.1416
     TrMesh_Rectangle_Create!(MeshFile, x1, x2, NX, y1, y2, NY)
     
     #Load LIRKHyp solver structure with default data. Modify the default data if necessary:
@@ -100,7 +100,8 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
         u_in             =   zeros(length(x[1]))
         v_in             =   zeros(length(x[1]))
         w_in             =   zeros(length(x[1]))
-        @tturbo @. u_in  +=  ueq + A*sin(0.1*xr)*sin(0.1*yr)
+#         @tturbo @. u_in  +=  ueq + A*sin(xr)*sin(yr)
+        @tturbo @. u_in  +=  2*A + A*sin(xr)*sin(yr)
         @tturbo @. v_in  +=  u_in
         @tturbo @. w_in  +=  (phi+f*v_in)/(u_in+q)
         

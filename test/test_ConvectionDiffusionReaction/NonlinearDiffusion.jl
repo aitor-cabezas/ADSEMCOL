@@ -1,7 +1,7 @@
 include("test_ConvectionDiffusionReaction.jl")
 
-function NonlinearDiffusion_test(;hp::Float64=2.0, FesOrder::Int64=5, tf::Float64=1.0, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",  CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0,CW::Float64=50.0,SC::Int64=0,
-A::Float64=0.05, B::Float64= 0.001, DT0::Float64= 0.01,omegat::Float64=1.0,
+function NonlinearDiffusion_test(;hp::Float64=0.01, FesOrder::Int64=5, tf::Float64=1.0, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",  CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0,CW::Float64=50.0,SC::Int64=0,
+A::Float64=0.0, B::Float64= 0.001, DT0::Float64= 0.01,omegat::Float64=1.0, Lx::Float64 = 1.0, Ly::Float64=1.0,
 PlotFig::Bool=true, Deltat_SaveFig::Float64=0.01, SaveFig::Bool=false, Nt_SaveFig::Int=typemax(Int),
 SaveRes::Bool=false, Nt_SaveRes::Int=typemax(Int), Deltat_SaveRes::Float64=0.01,
 Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3,AMA_SizeOrder::Int=FesOrder,AMA_AnisoOrder::Int=2,AMA_ProjN::Int=1,AMA_ProjOrder::Int=0,SpaceAdapt::Bool=true, TimeAdapt::Bool=true)
@@ -11,8 +11,8 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
     
     function a(t::Float64,x::Vector{Matrix{Float64}},u::Vector{Matrix{Float64}})
 
-        vx          =   @. (8*pi/25)*sin((pi*x[1])/25)*sin((pi*x[2])/25)
-        vy          =   @. (8*pi/25)*cos((pi*x[1])/25)*cos((pi*x[2])/25)
+        vx          =   @. (8*pi/(Lx/2))*sin((pi*x[1])/(Lx/2))*sin((pi*x[2])/(Lx/2))
+        vy          =   @. (8*pi/(Ly/2))*cos((pi*x[1])/(Ly/2))*cos((pi*x[2])/(Ly/2))
 
         return [vx,vy]
 
@@ -27,8 +27,8 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
 
     function dvdxv(x::Vector{Matrix{Float64}})
 
-        dvdx          =   @. 8*(pi/25)^2*cos((pi*x[1])/25)*sin((pi*x[2])/25)
-        dvdy          =   @. -8*(pi/25)^2*cos((pi*x[1])/25)*sin((pi*x[2])/25)
+        dvdx          =   @. 8*(pi/(Lx/2))^2*cos((pi*x[1])/(Lx/2))*sin((pi*x[2])/(Lx/2))
+        dvdy          =   @. -8*(pi/(Ly/2))^2*cos((pi*x[1])/(Ly/2))*sin((pi*x[2])/(Ly/2))
 
         return [dvdx,dvdy]
 
@@ -36,7 +36,7 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
 
     function Tfun(t::Float64)
 
-        T = sin(omegat*t)
+        T = 2.0 + sin(omegat*t)
 
         return T
 
@@ -55,6 +55,7 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
         sigma  =  y2/6
         EXPON  =  @. ((x[1]-x2/2)^2 + (x[2]-y2/2)^2)/(sigma*sigma)
         X      =  @. x[1]*(x2-x[1])*x[2]*(y2-x[2])*exp(-EXPON)
+        
         return X
 
     end
@@ -105,7 +106,7 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
         T0  = Tfun(0.0)
         X0  = Xfun(x)
 
-        return [@. X0*T0]
+        return [@.X0*T0]
 
     end
 
@@ -145,9 +146,9 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
         DTm   = DT(t,x,u)[1]
         dDTm  = dDT_du(t,x,u)[1]
 
-        dHdt     = @. X * dT
-        dconvdxi = @. T*X*(da1 + da2) + a1*T*dX1 + a2*T*dX2
-        ddiffdxi = @. DTm*T*(d2X1 + d2X2) + dDTm*T^2*(dX1^2 + dX2^2)
+        dHdt     = @. 0*X * dT
+        dconvdxi = @. 0*T*X*(da1 + da2) + a1*T*dX1 + a2*T*dX2
+        ddiffdxi = @. 0*DTm*T*(d2X1 + d2X2) + dDTm*T^2*(dX1^2 + dX2^2)
 
         return [@. dHdt + dconvdxi - ddiffdxi]
 
@@ -188,12 +189,12 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
     
     #Mesh:
     MeshFile                = "$(@__DIR__)/../../temp/NonlinearDiffusion$(SC).geo"
-    NX                      = Int(ceil(50.0/(hp*FesOrder)))
-    NY                      = Int(ceil(50.0/(hp*FesOrder)))
+    NX                      = Int(ceil(1.0/(hp*FesOrder)))
+    NY                      = Int(ceil(1.0/(hp*FesOrder)))
     x1                      = 0.0
-    x2                      = 50.0
+    x2                      = Lx
     y1                      = 0.0
-    y2                      = 50.0
+    y2                      = Ly
     TrMesh_Rectangle_Create!(MeshFile, x1, x2, NX, y1, y2, NY)
 
     #Load LIRKHyp solver structure with default data. Modify the default data if necessary:
@@ -314,11 +315,11 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
     while solver.t<tf
         N+=1
         ConvFlag            = LIRKHyp_Step!(solver)
-        if N ==100
-            CheckJacobian(solver, Plot_dQ_du=true, Plot_df_dgradu=true,Plot_df_du=true,Plot_dQ_dgradu=true)
-            BC_CheckJacobian(solver, 4, Plot_df_du=true, Plot_df_dgradu=true)
-            N=0
-        end
+#         if N ==100
+#             CheckJacobian(solver, Plot_dQ_du=true, Plot_df_dgradu=true,Plot_df_du=true,Plot_dQ_dgradu=true)
+#             BC_CheckJacobian(solver, 4, Plot_df_du=true, Plot_df_dgradu=true)
+#             N=0
+#         end
         if ConvFlag<=0
             break
         end
