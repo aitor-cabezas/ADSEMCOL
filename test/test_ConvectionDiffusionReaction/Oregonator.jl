@@ -127,6 +127,30 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
 #     BC_CheckJacobian(solver, 4, Plot_df_du=true, Plot_df_dgradu=true)
 #     return
 
+
+
+    # Interpolate Solution
+    
+    function uref(x::Vector{Matrix{Float64}})
+        
+        x1v         = reshape(x[1],:)
+        x2v         = reshape(x[2],:) 
+        
+        solverref   = GetSolver(??, ??)
+    
+        #Interpolate solution:
+        uvw_terp,   = SolutionCompute(solverref, solverreffes, [x1v, x2v])
+        
+        u_terp      = reshape(u_refterp[1], size(x[1]))
+        v_terp      = reshape(u_refterp[2], size(x[1]))
+        w_terp      = reshape(u_refterp[3], size(x[1]))
+        
+        
+        return [u_terp,v_terp,w_terp]
+#         return u_refterp[1]
+        
+    end
+
     #Function to plot solution:
     figv                = Vector{Figure}(undef,3)
     if PlotFig
@@ -248,6 +272,16 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
         SaveSol()
         
     end
+    
+    #Compute Lq error:
+    
+
+#       errLq,              = LqError(solver, FW11((x) -> uref(x)), q=2.0)
+#       Integ2D_Lq          = TrInt(solver.mesh, 2*(solver.FesOrder+2)+1)
+#       u_theor             = GetVbles(0, 1, ["u"])
+#       @show(typeof(u_theor))
+#       errLq,              = LqError(Integ2D, solver.u, solver.fes, FW11((x) -> uref(x)), solver.nFacts ,q=2.0)
+#       @show(errLq)
 
 
     #Save results:
