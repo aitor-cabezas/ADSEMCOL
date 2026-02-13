@@ -848,3 +848,46 @@ function NtSpaceRejected(SC::Int, nb::Int)
     return Nt_rejected
     
 end
+
+# Function for computing the Lq Error of a problem with a non-analitical solution given a reference solution
+
+function RefErr_Lq(SC::Vector{Int64},SCRef::Int64,nb::Int64;q::Real=2)
+    
+    # Interpolate Reference Solution
+
+    function uref(x::Vector{Matrix{Float64}})
+        
+        x1v         = reshape(x[1],:)
+        x2v         = reshape(x[2],:) 
+        
+        solverref   = GetSolver(SCRef, nb)
+    
+        #Interpolate solution:
+        
+        uvw_terp,   = SolutionCompute(solverref.u, solverref.fes, [x1v, x2v])
+        
+        u_terp      = reshape(uvw_terp[1], size(x[1]))
+        v_terp      = reshape(uvw_terp[2], size(x[1]))
+        w_terp      = reshape(uvw_terp[3], size(x[1]))
+        
+        
+        return [u_terp,v_terp,w_terp]
+        
+    end
+    
+    solver  =   []
+    hp      =   []
+    Integ2D =   []
+    errLq   =   []
+    
+    for i=1:length(SC)
+        push!(solver,GetSolver(SC[i],nb))
+        push!(Integ2D,TrInt(solver[i].mesh, 2*(solver[i].FesOrder+2)+1))
+        push!(hp,GetVbles(SC[i],nb,["hp"]))
+        push!(errLq,LqError(Integ2D[i],solver[i].u,solver[i].fes, FW11((x) -> uref(x)),solver[i].nFacts)[1])
+    end
+    
+    loglog(hp,errLq, "-xb")
+    
+    
+end

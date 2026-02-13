@@ -843,7 +843,7 @@ function CompareTMS_SmoothVortex(StudyCase::String;
         
         SCvv1       = [ 
                        1081:1083, 
-                       1085:1087,
+                       1085:1086,
                        1088:1091,
                        1092:1095,
                        1096:1099]
