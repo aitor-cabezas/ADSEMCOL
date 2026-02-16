@@ -5,7 +5,7 @@
 # NOTE: SBATCH parameters must be defined first. Do not define any variable before them.
 
 # Editable options:
-#SBATCH --job-name=SmoothVortex
+#SBATCH --job-name=Oregonator
 #SBATCH --partition=cn2
 #SBATCH --array=1-1%1
 #SBATCH --cpus-per-task=4
