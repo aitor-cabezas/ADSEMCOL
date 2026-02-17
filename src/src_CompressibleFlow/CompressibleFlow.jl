@@ -876,12 +876,15 @@ function FluxSource!(model::GasModel, _qp::TrIntVars, ComputeJ::Bool)
     epsilonFlux!(model, epsilon, du, ComputeJ, _qp.f, _qp.df_dgradu)
     
     #Subgrid stabilization - monolithic diffusion:
-    lambda          = udep[DepVarIndex(model,"lambda_max")][1]
+#     lambda          = udep[DepVarIndex(model,"lambda_max")][1]
+    vx              = udep[DepVarIndex(model,"vx")][1]
+    vy              = udep[DepVarIndex(model,"vy")][1]
 #     h_Elems         = _hElems(_qp.Integ2D.mesh)
     A_Elems         = areas(_qp.Integ2D.mesh)
     h_Elems         = @tturbo @. sqrt(A_Elems)
     hp              = h_Elems./_qp.FesOrder * ones(1, _qp.nqp)
-    tau             = @tturbo @. model.CSS*lambda*hp
+#     tau             = @tturbo @. model.CSS*lambda*hp
+    tau             = @tturbo @. model.CSS*sqrt(vx^2+vy^2)*hp
     epsilonFlux!(model, tau, duB, ComputeJ, _qp.fB, _qp.dfB_dgraduB)
     
     #Source terms:
@@ -891,7 +894,8 @@ function FluxSource!(model::GasModel, _qp::TrIntVars, ComputeJ::Bool)
     #CFL number:
     hp_min              = _hmin(_qp.Integ2D.mesh)./_qp.FesOrder * ones(1, _qp.nqp)
     D_max               = @. max(epsilon, nu, beta, kappa_rho_cv)
-    Deltat_CFL_lambda   = @. $minimum(hp_min/lambda)
+#     Deltat_CFL_lambda   = @. $minimum(hp_min/lambda)
+    Deltat_CFL_lambda   = @. $minimum(hp_min/sqrt(vx^2+vy^2))
     Deltat_CFL_D        = @. $minimum(hp_min^2/D_max)
     Deltat_CFL_reac     = @. $minimum(1.0/lambda_reac)
     _qp.Deltat_CFL      = min(Deltat_CFL_lambda, Deltat_CFL_D, Deltat_CFL_reac)

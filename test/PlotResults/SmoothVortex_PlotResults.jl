@@ -1,26 +1,39 @@
 include("PlotResults.jl")
 
-function utheor_SmoothVortex(t::Float64, x::Vector{<:VecOrMat{Float64}})
+function utheor_SmoothVortex(t::Float64, x::Vector{<:VecOrMat{Float64}};a_infty::Float64=1.18)
+
+        gamma=1.4
+        vortex_st=1.11
+        u_inf=1.0
+        v_inf=0.0
+        R=1.0
+        sigma=1.0
+        rho_infty=1.0
         
-    #Problem data:
-    gamma           = 1.4
-    vortex_st       = 5.0   #vortex strength
-    u_inf           = 1.0   #vortex horizontal velocity
-    
-    xm          = hcat(x[1][:], x[2][:])
-    rho         = rho_SmoothVortex(xm, gamma, vortex_st, t, 0.0, u_inf, 0.0)
-    rhovx       = rho .* vx_SmoothVortex(xm, gamma, vortex_st, t, 0.0, u_inf, 0.0)
-    rhovy       = rho .* vy_SmoothVortex(xm, gamma, vortex_st, t, 0.0, u_inf, 0.0)
-    rhoE        = @. rho * $e_SmoothVortex(xm, gamma, vortex_st, t, 0.0, u_inf, 0.0) + 
-                            0.5*(rhovx^2 + rhovy^2)/rho
-                            
-    rho         = reshape(rho, size(x[1]))
-    rhovx       = reshape(rhovx, size(x[1]))
-    rhovy       = reshape(rhovy, size(x[1]))
-    rhoE        = reshape(rhoE, size(x[1]))
-    
-    return [rho, rhovx, rhovy, rhoE]
-    
+        xm          = hcat(x[1][:], x[2][:])
+        x0          = 0.0
+        y0          = 0.0
+        xv          = x0 + u_inf * t
+        yv          = y0 + v_inf * t
+        rho         = rho_SmoothVortex(xm, gamma, vortex_st, xv, yv, u_inf, 0.0, R, sigma,
+                                       rho_infty)
+        rhovx       = rho .* vx_SmoothVortex(xm, gamma, vortex_st, xv, yv, u_inf, 0.0, R, sigma,
+                                             a_infty)
+        rhovy       = rho .* vy_SmoothVortex(xm, gamma, vortex_st, xv, yv, u_inf, 0.0, R, sigma,
+                                             a_infty)
+
+        p_infty = (rho_infty/gamma)*(a_infty)^2
+
+        rhoE        = rho .* e_SmoothVortex(xm, gamma, vortex_st, xv, yv, u_inf, 0.0, R,
+                                            sigma,rho_infty,p_infty) + 0.5*(rhovx.^2 + rhovy.^2)./rho
+
+        rho         = reshape(rho, size(x[1]))
+        rhovx       = reshape(rhovx, size(x[1]))
+        rhovy       = reshape(rhovy, size(x[1]))
+        rhoE        = reshape(rhoE, size(x[1]))
+
+        return [rho, rhovx, rhovy, rhoE]
+
 end
     
 function Lines_SmoothVortex(SC::Int, nb::Int; 
