@@ -1,6 +1,6 @@
 include("test_ConvectionDiffusionReaction.jl")
 
-function NonlinearDiffusion_test(;hp::Float64=0.01, FesOrder::Int64=5, tf::Float64=1.0, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",  CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0,CW::Float64=50.0,SC::Int64=0,
+function NonlinearDiffusion_test(;hp::Float64=0.01, FesOrder::Int64=5, tf::Float64=5e-2, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",  CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0,CW::Float64=50.0,SC::Int64=0,
 A::Float64=0.0, B::Float64= 0.001, DT0::Float64= 0.01,omegat::Float64=1.0, Lx::Float64 = 1.0, Ly::Float64=1.0,
 PlotFig::Bool=true, Deltat_SaveFig::Float64=0.01, SaveFig::Bool=false, Nt_SaveFig::Int=typemax(Int),
 SaveRes::Bool=false, Nt_SaveRes::Int=typemax(Int), Deltat_SaveRes::Float64=0.01,
@@ -113,7 +113,7 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
     function DT(t::Float64,x::Vector{Matrix{Float64}},u::Vector{Matrix{Float64}})
 
         H0x = H0(x)[1]
-        DTfun = @. DT0 + A*(u[1] - H0x) + B*(u[1] - H0x)^2
+        DTfun = @. DT0 + B*(u[1] - H0x)^2
         return [DTfun]
 
     end
@@ -121,7 +121,7 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
     function dDT_du(t::Float64,x::Vector{Matrix{Float64}},u::Vector{Matrix{Float64}})
 
         H0x = H0(x)[1]
-        dDT_dufun = @. A + 2*B*(u[1] - H0x)
+        dDT_dufun = @. 2*B*(u[1] - H0x)
         return [dDT_dufun]
 
     end
@@ -146,11 +146,11 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
         DTm   = DT(t,x,u)[1]
         dDTm  = dDT_du(t,x,u)[1]
 
-        dHdt     = @. 0*X * dT
-        dconvdxi = @. 0*T*X*(da1 + da2) + a1*T*dX1 + a2*T*dX2
-        ddiffdxi = @. 0*DTm*T*(d2X1 + d2X2) + dDTm*T^2*(dX1^2 + dX2^2)
+        dHdt     = @. X * dT
+        dconvdxi = @. T*X*(da1 + da2) + a1*T*dX1 + a2*T*dX2
+        ddiffdxi = @. DTm*T*(d2X1 + d2X2) + dDTm*T^2*(dX1^2 + dX2^2)
 
-        return [@. dHdt + dconvdxi - ddiffdxi]
+        return [@. 0*dHdt + 0*dconvdxi - 0*ddiffdxi]
 
     end
 
@@ -162,7 +162,7 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
         d2X1, d2X2  = d2Xdxv2fun(x)
         dX1, dX2    = dXdxvfun(x)
 
-        dQdu = @. -dDTm*T*(d2X1 + d2X2) - T^2*(dX1^2 + dX2^2)*d2DTm
+        dQdu = @. 0*(-dDTm*T*(d2X1 + d2X2) - T^2*(dX1^2 + dX2^2)*d2DTm)
         return [dQdu]
 
     end
@@ -230,10 +230,10 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
 
     #Compute initial condition:
     ConvFlag            = LIRKHyp_InitialCondition!(solver)
-    
-#     CheckJacobian(solver, Plot_dQ_du=true, Plot_df_dgradu=true,Plot_df_du=true,Plot_dQ_dgradu=true)
-#     BC_CheckJacobian(solver, 4, Plot_df_du=true, Plot_df_dgradu=true)
-#     return
+   #= 
+    CheckJacobian(solver, Plot_dQ_du=true, Plot_df_dgradu=true,Plot_df_du=true,Plot_dQ_dgradu=true)
+    BC_CheckJacobian(solver, 4, Plot_df_du=true, Plot_df_dgradu=true)
+    return=#
 
     #Change TolT:
     if TolT==0.0
@@ -315,7 +315,7 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
     while solver.t<tf
         N+=1
         ConvFlag            = LIRKHyp_Step!(solver)
-#         if N ==100
+#         if N ==20
 #             CheckJacobian(solver, Plot_dQ_du=true, Plot_df_dgradu=true,Plot_df_du=true,Plot_dQ_dgradu=true)
 #             BC_CheckJacobian(solver, 4, Plot_df_du=true, Plot_df_dgradu=true)
 #             N=0
