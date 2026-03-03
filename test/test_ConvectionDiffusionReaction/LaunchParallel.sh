@@ -7,9 +7,9 @@
 # Editable options:
 #SBATCH --job-name=Oregonator
 #SBATCH --partition=cn2
-#SBATCH --array=1-1%1
+#SBATCH --array=2-25%10
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=220G
+#SBATCH --mem=20G
 
 # Do not modify:
 #SBATCH --nodes=1
