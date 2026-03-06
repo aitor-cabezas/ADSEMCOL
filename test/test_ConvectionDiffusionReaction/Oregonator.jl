@@ -252,9 +252,9 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
 
 
     #Save results:
-#     if SaveRes
-#         save("$(ResUbi)LIRKHyp_SC$(SC)_1.jld2", "StudyCase", "Oregonator",
-#              "ConvFlag", ConvFlag, "solver", save(solver) )
-#     end
+    if SaveRes
+        save("$(ResUbi)LIRKHyp_SC$(SC)_1000.jld2", "StudyCase", "Oregonator",
+             "ConvFlag", ConvFlag, "solver", save(solver) )
+    end
     
 end
