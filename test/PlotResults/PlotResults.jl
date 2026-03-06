@@ -2,6 +2,7 @@ include("../ResUbi.jl")
 include("../test_ConvectionDiffusion/test_ConvectionDiffusion.jl")
 include("../test_CompressibleFlow/test_CompressibleFlow.jl")
 include("../test_NonHydrostaticWaterWaves/test_NonHydrostaticWaterWaves.jl")
+include("../test_ConvectionDiffusionReaction/test_ConvectionDiffusionReaction.jl")
 
 PyPlot.using3D()
 
@@ -878,7 +879,7 @@ function RefErr_Lq(SC::Vector{Int64},nb::Int64,SCRef::Int64,nbRef::Int64;q::Real
     end
     
     solver  =   []
-    hp      =   []
+#     hp      =   []
 #     Deltat  =   []
     Integ2D =   []
     errLq   =   []
@@ -886,14 +887,14 @@ function RefErr_Lq(SC::Vector{Int64},nb::Int64,SCRef::Int64,nbRef::Int64;q::Real
     for i=1:length(SC)
         push!(solver,GetSolver(SC[i],nb))
         push!(Integ2D,TrInt(solver[i].mesh, 2*(solver[i].FesOrder+2)+1))
-        push!(hp,GetVbles(SC[i],nb,["hp"]))
+#         push!(hp,GetVbles(SC[i],nb,["hp"]))
 #         push!(Deltat,GetVbles(SC[i],nb,["Deltat"]))
         push!(errLq,LqError(Integ2D[i],solver[i].u,solver[i].fes, FW11((x) -> uref(x)),solver[i].nFacts;q=q)[1])
     end
     
 #     @show(Deltat)
     
-    loglog(hp,errLq, "-xb")
+#     loglog(hp,errLq, "-xb")
 #     loglog(Deltat,errLq, "-xg")
 
     return errLq

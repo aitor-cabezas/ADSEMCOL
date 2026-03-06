@@ -954,6 +954,16 @@ function CompareTMS_SmoothVortex(StudyCase::String;
         nb          = 1
         
      end
+       
+       if StudyCase=="prueba_KCR35"
+    
+        #TimeAdapt:NO
+        
+        SCvv1       = [1256:1259]
+        
+        nb          = 1
+        
+     end
         
     #------------------------------------------------------------
     
