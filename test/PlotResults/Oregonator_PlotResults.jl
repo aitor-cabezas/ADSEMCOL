@@ -9,8 +9,8 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
     if StudyCase=="Oa"
     
         #TimeAdapt: YES
-        SCvv1       = [2001:2004, 
-                       2005:2008, 
+        SCvv1       = [2001:2004,
+                       2005:2008,
                        2009:2012,
                        2013:2016,
                        2017:2020,
@@ -21,7 +21,7 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
         
     #------------------------------------------------------------
     
-    Deltatvv1,etavv1,tCPUvv1,CFLvv1,TIMethodNamevv1             = GetVbles(SCvv1, ["Deltat","etaL2L2","tCPU","CFLmax", "TIMethodName"], nb=nb)
+    Deltatvv1,tCPUvv1,CFLvv1,TIMethodNamevv1             = GetVbles(SCvv1, ["Deltat","tCPU","CFLmax", "TIMethodName"], nb=nb)
     errv1      = []
     errvv1     = []
     SCvv1r     = reduce(vcat,SCvv1)
@@ -33,10 +33,10 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
 
     
     for i=1:4:length(errv1)
-        
+
         serrv1  =   errv1[i:i+3]
         push!(errvv1,serrv1)
-        
+
     end
     
     EOCvv1                                                      = ExpOrderConv(Deltatvv1, errvv1)
