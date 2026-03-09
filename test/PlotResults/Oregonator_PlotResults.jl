@@ -9,9 +9,9 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
     if StudyCase=="Oa"
     
         #TimeAdapt: YES
-        SCvv1       = [2001:2004,
-                       2005:2008,
-                       2009:2012,
+        SCvv1       = [2001:2003,
+                       2005:2007,
+                       2009:2011,
                        2013:2016,
                        2017:2020,
                        2021:2024]
@@ -23,22 +23,23 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
     
     Deltatvv1,tCPUvv1,CFLvv1,TIMethodNamevv1             = GetVbles(SCvv1, ["Deltat","tCPU","CFLmax", "TIMethodName"], nb=nb)
     errv1      = []
-    errvv1     = []
+    errvv1     = Vector{Vector{Any}}()
     SCvv1r     = reduce(vcat,SCvv1)
     
- 
-       
     errv1 = RefErr_Lq(SCvv1r,nb,SCRef,nbRef;q=q)
-       
 
-    
-    for i=1:4:length(errv1)
+    n = 1
+    for i=1:length(SCvv1)
 
-        serrv1  =   errv1[i:i+3]
+        k       =   length(SCvv1[i])
+        serrv1  =   errv1[n:n+k-1]
         push!(errvv1,serrv1)
+        n       =   n + k
 
     end
-    
+
+    @show(errvv1)
+    @show(typeof(errvv1))
     EOCvv1                                                      = ExpOrderConv(Deltatvv1, errvv1)
     
     PyPlotFigure(w=w, h=h, bottom=1.5)
