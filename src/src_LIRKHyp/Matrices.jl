@@ -415,6 +415,12 @@ function LS_gmres!(LS::LinearSystem1, u::GenVector{Float64}, b::GenVector{Float6
                                 AbsTolG=AbsTol, RelTolG=RelTol,
                                 Display=Display, history=true,
                                 NormFun=LS.NormFun)
+#     solver_output           = NLS_gmres(FW_NLS((x,g)->QN_ILU0!(x,g)), uhat_m,
+#                                 memory=100, MaxIter=MaxIter, 
+#                                 AbsTolX=AbsTol, RelTolX=RelTol,
+#                                 AbsTolG=0.0, RelTolG=0.0, 
+#                                 Display=Display, history=true,
+#                                 NormFun=LS.NormFun)
 #     if scaleP[1]!=1.0
 #         error("")
 #     end
@@ -424,8 +430,8 @@ function LS_gmres!(LS::LinearSystem1, u::GenVector{Float64}, b::GenVector{Float6
     nIter                   = solver_output[2].nIter
     resv                    = solver_output[2].gnorms
     etaA                    = resv[length(resv)]
-    if solver_output[2].flag==2
-        #Exit due to convergence in residual g
+    if solver_output[2].flag>0
+        #Exit due to convergence in residual g or step p
     else
         if false
             figure()

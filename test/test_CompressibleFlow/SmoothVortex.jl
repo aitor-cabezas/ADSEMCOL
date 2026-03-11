@@ -104,6 +104,7 @@ function SmoothVortex(; hp::Float64=1.0, FesOrder::Int=5, tf::Float64 = 0.1,
     solver.TolT             = TolT
     solver.SpaceAdapt       = SpaceAdapt
     solver.TimeAdapt        = TimeAdapt
+    solver.CA               = 1e-3
     solver.CA_max           = Inf
     
     #Set initial and boundary conditions:
