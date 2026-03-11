@@ -219,7 +219,8 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
     solver.TolT             = TolT
     solver.SpaceAdapt       = SpaceAdapt
     solver.TimeAdapt        = TimeAdapt
-    
+    solver.CA               = 1e-3
+        
     # Set Boundary Conditions
     
     solver.BC           = [BCW(BC_Dirichlet), BCW(BC_Dirichlet), BCW(BC_Dirichlet), BCW(BC_Dirichlet)]
