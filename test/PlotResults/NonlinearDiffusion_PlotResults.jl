@@ -15,6 +15,17 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String,nb::Int64,SCRef::Int64,
                        3013:3016,
                        3017:3020,
                        3021:3024]
+
+
+    elseif StudyCase=="NCDb"
+
+        #TimeAdapt: No
+        SCvv1       = [3025:3028,
+                       3029:3032,
+                       3033:3036,
+                       3037:3040,
+                       3041:3044,
+                       3045:3048]
                         
         
     end
