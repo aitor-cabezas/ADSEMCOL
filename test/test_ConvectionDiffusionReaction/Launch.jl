@@ -26,6 +26,23 @@ try
         SC                   = parse(Int64,ARGS[20])
         Oregonator_test(TMSName=TMSName,RoWMethod=RoWMethod,RKMethod=RKMethod,tf=tf,Deltat0=Deltat0,TolT=TolT,hp=hp,TolS=TolS,TimeAdapt=TimeAdapt,SpaceAdapt=SpaceAdapt,phi=phi,epsilon=epsilon,epsilonp=epsilonp,Du=Du,Dw=Dw,q=q,f=f,A=A,SC=SC,SaveRes=true)
         
+    elseif ProblemName=="NonlinearDiffusion"
+        
+        TMSName              = ARGS[2]
+        RoWMethod            = ARGS[3]
+        RKMethod             = ARGS[4]
+        tf                   = parse(Float64,ARGS[5])
+        Deltat0              = parse(Float64,ARGS[6])
+        TolT                 = parse(Float64,ARGS[7])
+        hp                   = parse(Float64,ARGS[8])
+        TolS                 = parse(Float64,ARGS[9])
+        TimeAdapt            = parse(Bool,ARGS[10])
+        SpaceAdapt           = parse(Bool,ARGS[11])
+        DT0                  = parse(Float64,ARGS[12])
+        B                    = parse(Float64,ARGS[13])
+        SC                   = parse(Int64,ARGS[14])
+        NonlinearDiffusion_test(TMSName=TMSName,RoWMethod=RoWMethod,RKMethod=RKMethod,tf=tf,Deltat0=Deltat0,TolT=TolT,hp=hp,TolS=TolS,TimeAdapt=TimeAdapt,SpaceAdapt=SpaceAdapt,DT0=DT0,B=B,SC=SC,SaveRes=true)
+        
     else
         error("Undefined problem $(ProblemName)")
     end

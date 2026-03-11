@@ -1,7 +1,7 @@
 include("test_ConvectionDiffusionReaction.jl")
 
-function NonlinearDiffusion_test(;hp::Float64=0.01, FesOrder::Int64=5, tf::Float64=5e-2, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",  CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0,CW::Float64=50.0,SC::Int64=0,
-A::Float64=0.0, B::Float64= 0.001, DT0::Float64= 0.01,omegat::Float64=1.0, Lx::Float64 = 1.0, Ly::Float64=1.0,
+function NonlinearDiffusion_test(;hp::Float64=0.01, FesOrder::Int64=5, tf::Float64=2.5, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",  CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0,CW::Float64=50.0,SC::Int64=0,
+A::Float64=0.0, B::Float64= 0.001, DT0::Float64= 0.0005,omegat::Float64=1.0, Lx::Float64 = 1.0, Ly::Float64=1.0,
 PlotFig::Bool=true, Deltat_SaveFig::Float64=0.01, SaveFig::Bool=false, Nt_SaveFig::Int=typemax(Int),
 SaveRes::Bool=false, Nt_SaveRes::Int=typemax(Int), Deltat_SaveRes::Float64=0.01,
 Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3,AMA_SizeOrder::Int=FesOrder,AMA_AnisoOrder::Int=2,AMA_ProjN::Int=1,AMA_ProjOrder::Int=0,SpaceAdapt::Bool=true, TimeAdapt::Bool=true)
@@ -11,8 +11,8 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
     
     function a(t::Float64,x::Vector{Matrix{Float64}},u::Vector{Matrix{Float64}})
 
-        vx          =   @. (8*pi/(Lx/2))*sin((pi*x[1])/(Lx/2))*sin((pi*x[2])/(Lx/2))
-        vy          =   @. (8*pi/(Ly/2))*cos((pi*x[1])/(Ly/2))*cos((pi*x[2])/(Ly/2))
+        vx          =   @. (0.5/(Lx/2))*sin((pi*x[1])/(Lx/2))*sin((pi*x[2])/(Lx/2))
+        vy          =   @. (0.5/(Ly/2))*cos((pi*x[1])/(Ly/2))*cos((pi*x[2])/(Ly/2))
 
         return [vx,vy]
 
@@ -341,11 +341,11 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
     end
 
 
-#     #Save results:
-#     if SaveRes
-#         save("$(ResUbi)LIRKHyp_SC$(SC)_1000.jld2", "StudyCase", "Oregonator",
-#              "ConvFlag", ConvFlag, "solver", save(solver) )
-#     end
+    #Save results:
+        if SaveRes
+            save("$(ResUbi)LIRKHyp_SC$(SC)_1000.jld2", "StudyCase", "NonlinearDiffusion",
+                "ConvFlag", ConvFlag, "solver", save(solver) )
+        end
     
     
 end
