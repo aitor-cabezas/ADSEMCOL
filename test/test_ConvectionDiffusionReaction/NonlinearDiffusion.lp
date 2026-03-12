@@ -1,4 +1,4 @@
-NonlinearDiffusion	IRK	ROS34PRW	Ascher3	2.5	1.00E-08	1.00E-08	0.01	1.00E-08	true	true	0.0005	0.001	3000
+NonlinearDiffusion	IRK	ROS34PRW	Ascher3	2.5	1.00E-08	1.00E-09	0.01	1.00E-09	true	true	0.0005	0.001	3000
 NonlinearDiffusion	RoW	ROS34PRW	Ascher3	2.5	1.00E-08	1.00E-03	0.01	1.00E-05	true	true	0.0005	0.001	3001
 NonlinearDiffusion	RoW	ROS34PRW	Ascher3	2.5	1.00E-08	1.00E-04	0.01	1.00E-06	true	true	0.0005	0.001	3002
 NonlinearDiffusion	RoW	ROS34PRW	Ascher3	2.5	1.00E-08	1.00E-05	0.01	1.00E-07	true	true	0.0005	0.001	3003
