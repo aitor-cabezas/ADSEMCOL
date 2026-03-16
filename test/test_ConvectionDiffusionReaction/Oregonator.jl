@@ -100,8 +100,8 @@ function Oregonator_test(;hp::Float64=1.0, FesOrder::Int64=5, tf::Float64=1.0, T
         u_in             =   zeros(length(x[1]))
         v_in             =   zeros(length(x[1]))
         w_in             =   zeros(length(x[1]))
-        @tturbo @. u_in  +=  ueq + A*sin(xr)*sin(yr)
-#         @tturbo @. u_in  +=  2*A + A*sin(xr)*sin(yr)
+        @tturbo @. u_in  +=  ueq + A*cos(xr)*cos(yr)
+#         @tturbo @. u_in  +=  A*cos(xr)*cos(yr)
         @tturbo @. v_in  +=  u_in
         @tturbo @. w_in  +=  (phi+f*v_in)/(u_in+q)
         
