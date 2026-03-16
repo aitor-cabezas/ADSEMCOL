@@ -9,12 +9,21 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
     if StudyCase=="Oa"
     
         #TimeAdapt: YES
-        SCvv1       = [2001:2003,
-                       2005:2007,
-                       2009:2011,
+        SCvv1       = [2001:2004,
+                       2005:2008,
+                       2009:2012,
                        2013:2016,
                        2017:2020,
                        2021:2024]
+
+    elseif StudyCase=="Ob"
+        #TimeAdapt: NO
+        SCvv1       = [2025:2028,
+                       2029:2032,
+                       2033:2036,
+                       2037:2040,
+                       2041:2044,
+                       2045:2048]
                         
         
     end
