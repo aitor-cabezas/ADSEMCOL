@@ -6,7 +6,7 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String,nb::Int64,SCRef::Int64,
     SCvv0   = NaN
     SCvv1   = NaN
     
-    if StudyCase=="NCDa"
+    if StudyCase=="NCD1a"
     
         #TimeAdapt: YES
         SCvv1       = [3001:3004,
@@ -17,7 +17,7 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String,nb::Int64,SCRef::Int64,
                        3021:3024]
 
 
-    elseif StudyCase=="NCDb"
+    elseif StudyCase=="NCD1b"
 
         #TimeAdapt: No
         SCvv1       = [3025:3028,
@@ -26,6 +26,16 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String,nb::Int64,SCRef::Int64,
                        3037:3040,
                        3041:3044,
                        3045:3048]
+        
+    elseif StudyCase=="NCD2a"
+    
+        #TimeAdapt: YES
+        SCvv1       = [3001:3004,
+                       3005:3008,
+                       3009:3012,
+                       3013:3016,
+                       3017:3020,
+                       3021:3024]
                         
         
     end

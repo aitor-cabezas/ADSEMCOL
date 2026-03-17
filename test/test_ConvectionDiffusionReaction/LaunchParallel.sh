@@ -7,7 +7,7 @@
 # Editable options:
 #SBATCH --job-name=NonlinearDiffusion
 #SBATCH --partition=cn2
-#SBATCH --array=1-25%6
+#SBATCH --array=26-74%6
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=40G
 
