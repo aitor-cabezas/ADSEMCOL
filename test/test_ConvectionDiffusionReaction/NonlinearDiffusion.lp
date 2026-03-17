@@ -72,6 +72,56 @@ NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	1.00E-08	1.00E-03	0.01	1.00E-05	true	tr
 NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	1.00E-08	1.00E-04	0.01	1.00E-06	true	true	0.05	10.0	3071
 NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	1.00E-08	1.00E-05	0.01	1.00E-07	true	true	0.05	10.0	3072
 NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	1.00E-08	1.00E-06	0.01	1.00E-08	true	true	0.05	10.0	3073
+NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	2.00E-02	1.00E-03	0.01	1.00E-05	false	true	0.05	10.0	3074
+NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	1.00E-02	1.00E-04	0.01	1.00E-06	false	true	0.05	10.0	3075
+NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	5.00E-03	1.00E-05	0.01	1.00E-07	false	true	0.05	10.0	3076
+NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	2.50E-03	1.00E-06	0.01	1.00E-08	false	true	0.05	10.0	3077
+NonlinearDiffusion	LIRK	ROS34PRW	Ascher3	1.0	2.00E-02	1.00E-03	0.01	1.00E-05	false	true	0.05	10.0	3078
+NonlinearDiffusion	LIRK	ROS34PRW	Ascher3	1.0	1.00E-02	1.00E-04	0.01	1.00E-06	false	true	0.05	10.0	3079
+NonlinearDiffusion	LIRK	ROS34PRW	Ascher3	1.0	5.00E-03	1.00E-05	0.01	1.00E-07	false	true	0.05	10.0	3080
+NonlinearDiffusion	LIRK	ROS34PRW	Ascher3	1.0	2.50E-03	1.00E-06	0.01	1.00E-08	false	true	0.05	10.0	3081
+NonlinearDiffusion	LIRK	ROS34PRW	BPR3	1.0	2.00E-02	1.00E-03	0.01	1.00E-05	false	true	0.05	10.0	3082
+NonlinearDiffusion	LIRK	ROS34PRW	BPR3	1.0	1.00E-02	1.00E-04	0.01	1.00E-06	false	true	0.05	10.0	3083
+NonlinearDiffusion	LIRK	ROS34PRW	BPR3	1.0	5.00E-03	1.00E-05	0.01	1.00E-07	false	true	0.05	10.0	3084
+NonlinearDiffusion	LIRK	ROS34PRW	BPR3	1.0	2.50E-03	1.00E-06	0.01	1.00E-08	false	true	0.05	10.0	3085
+NonlinearDiffusion	IRK	ROS34PRW	Ascher3	1.0	2.00E-02	1.00E-03	0.01	1.00E-05	false	true	0.05	10.0	3086
+NonlinearDiffusion	IRK	ROS34PRW	Ascher3	1.0	1.00E-02	1.00E-04	0.01	1.00E-06	false	true	0.05	10.0	3087
+NonlinearDiffusion	IRK	ROS34PRW	Ascher3	1.0	5.00E-03	1.00E-05	0.01	1.00E-07	false	true	0.05	10.0	3088
+NonlinearDiffusion	IRK	ROS34PRW	Ascher3	1.0	2.50E-03	1.00E-06	0.01	1.00E-08	false	true	0.05	10.0	3089
+NonlinearDiffusion	IRK	ROS34PRW	BPR3	1.0	2.00E-02	1.00E-03	0.01	1.00E-05	false	true	0.05	10.0	3090
+NonlinearDiffusion	IRK	ROS34PRW	BPR3	1.0	1.00E-02	1.00E-04	0.01	1.00E-06	false	true	0.05	10.0	3091
+NonlinearDiffusion	IRK	ROS34PRW	BPR3	1.0	5.00E-03	1.00E-05	0.01	1.00E-07	false	true	0.05	10.0	3092
+NonlinearDiffusion	IRK	ROS34PRW	BPR3	1.0	2.50E-03	1.00E-06	0.01	1.00E-08	false	true	0.05	10.0	3093
+NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	2.00E-02	1.00E-03	0.01	1.00E-05	false	true	0.05	10.0	3094
+NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	1.00E-02	1.00E-04	0.01	1.00E-06	false	true	0.05	10.0	3095
+NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	5.00E-03	1.00E-05	0.01	1.00E-07	false	true	0.05	10.0	3096
+NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	2.50E-03	1.00E-06	0.01	1.00E-08	false	true	0.05	10.0	3097
+NonlinearDiffusion	IRK	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-09	0.01	1.00E-09	true	true	0.05	100.0	3098
+NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-03	0.01	1.00E-05	true	true	0.05	100.0	3099
+NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-04	0.01	1.00E-06	true	true	0.05	100.0	3100
+NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-05	0.01	1.00E-07	true	true	0.05	100.0	3101
+NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-06	0.01	1.00E-08	true	true	0.05	100.0	3102
+NonlinearDiffusion	LIRK	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-03	0.01	1.00E-05	true	true	0.05	100.0	3103
+NonlinearDiffusion	LIRK	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-04	0.01	1.00E-06	true	true	0.05	100.0	3104
+NonlinearDiffusion	LIRK	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-05	0.01	1.00E-07	true	true	0.05	100.0	3105
+NonlinearDiffusion	LIRK	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-06	0.01	1.00E-08	true	true	0.05	100.0	3106
+NonlinearDiffusion	LIRK	ROS34PRW	BPR3	1.0	1.00E-08	1.00E-03	0.01	1.00E-05	true	true	0.05	100.0	3107
+NonlinearDiffusion	LIRK	ROS34PRW	BPR3	1.0	1.00E-08	1.00E-04	0.01	1.00E-06	true	true	0.05	100.0	3108
+NonlinearDiffusion	LIRK	ROS34PRW	BPR3	1.0	1.00E-08	1.00E-05	0.01	1.00E-07	true	true	0.05	100.0	3109
+NonlinearDiffusion	LIRK	ROS34PRW	BPR3	1.0	1.00E-08	1.00E-06	0.01	1.00E-08	true	true	0.05	100.0	3110
+NonlinearDiffusion	IRK	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-03	0.01	1.00E-05	true	true	0.05	100.0	3111
+NonlinearDiffusion	IRK	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-04	0.01	1.00E-06	true	true	0.05	100.0	3112
+NonlinearDiffusion	IRK	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-05	0.01	1.00E-07	true	true	0.05	100.0	3113
+NonlinearDiffusion	IRK	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-06	0.01	1.00E-08	true	true	0.05	100.0	3114
+NonlinearDiffusion	IRK	ROS34PRW	BPR3	1.0	1.00E-08	1.00E-03	0.01	1.00E-05	true	true	0.05	100.0	3115
+NonlinearDiffusion	IRK	ROS34PRW	BPR3	1.0	1.00E-08	1.00E-04	0.01	1.00E-06	true	true	0.05	100.0	3116
+NonlinearDiffusion	IRK	ROS34PRW	BPR3	1.0	1.00E-08	1.00E-05	0.01	1.00E-07	true	true	0.05	100.0	3117
+NonlinearDiffusion	IRK	ROS34PRW	BPR3	1.0	1.00E-08	1.00E-06	0.01	1.00E-08	true	true	0.05	100.0	3118
+NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	1.00E-08	1.00E-03	0.01	1.00E-05	true	true	0.05	100.0	3119
+NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	1.00E-08	1.00E-04	0.01	1.00E-06	true	true	0.05	100.0	3120
+NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	1.00E-08	1.00E-05	0.01	1.00E-07	true	true	0.05	100.0	3121
+NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	1.00E-08	1.00E-06	0.01	1.00E-08	true	true	0.05	100.0	3122
+
 
 
 
