@@ -960,7 +960,8 @@ function CompareTMS_SmoothVortex(StudyCase::String;
         #TimeAdapt:NO
         
 #         SCvv1       = [1256:1259]
-        SCvv1       = [1260:1262]
+        SCvv1       = [1260:1263]
+#         SCvv1       = [1264:1267]
         
         nb          = 1
         
