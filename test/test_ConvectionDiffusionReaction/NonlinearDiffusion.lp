@@ -47,7 +47,7 @@ NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	4.00E-02	1.00E-03	0.01	1.00E-06	false	t
 NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	2.00E-02	1.00E-04	0.01	1.00E-07	false	true	0.05	1.0	3046
 NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	1.00E-02	1.00E-05	0.01	1.00E-08	false	true	0.05	1.0	3047
 NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	5.00E-03	1.00E-06	0.01	1.00E-09	false	true	0.05	1.0	3048
-NonlinearDiffusion	IRK	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-12	0.01	1.00E-15	true	true	0.05	10.0	3049
+NonlinearDiffusion	IRK	ROS34PRW	Ascher3	1.0	1.00E-06	1.00E-12	0.01	1.00E-12	false	true	0.05	10.0	3049
 NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-03	0.01	1.00E-06	true	true	0.05	10.0	3050
 NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-04	0.01	1.00E-07	true	true	0.05	10.0	3051
 NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-05	0.01	1.00E-08	true	true	0.05	10.0	3052
@@ -96,7 +96,7 @@ NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	4.00E-02	1.00E-03	0.01	1.00E-06	false	t
 NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	2.00E-02	1.00E-04	0.01	1.00E-07	false	true	0.05	10.0	3095
 NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	1.00E-02	1.00E-05	0.01	1.00E-08	false	true	0.05	10.0	3096
 NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	5.00E-03	1.00E-06	0.01	1.00E-09	false	true	0.05	10.0	3097
-NonlinearDiffusion	IRK	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-12	0.01	1.00E-15	true	true	0.05	100.0	3098
+NonlinearDiffusion	IRK	ROS34PRW	Ascher3	1.0	1.00E-06	1.00E-12	0.01	1.00E-12	false	true	0.05	100.0	3098
 NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-03	0.01	1.00E-06	true	true	0.05	100.0	3099
 NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-04	0.01	1.00E-07	true	true	0.05	100.0	3100
 NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-05	0.01	1.00E-08	true	true	0.05	100.0	3101
@@ -145,7 +145,7 @@ NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	4.00E-02	1.00E-03	0.01	1.00E-06	false	t
 NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	2.00E-02	1.00E-04	0.01	1.00E-07	false	true	0.05	100.0	3144
 NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	1.00E-02	1.00E-05	0.01	1.00E-08	false	true	0.05	100.0	3145
 NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	5.00E-03	1.00E-06	0.01	1.00E-09	false	true	0.05	100.0	3146
-NonlinearDiffusion	IRK	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-12	0.01	1.00E-15	true	true	0.05	1000.0	3147
+NonlinearDiffusion	IRK	ROS34PRW	Ascher3	1.0	1.00E-06	1.00E-12	0.01	1.00E-12	false	true	0.05	1000.0	3147
 NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-03	0.01	1.00E-06	true	true	0.05	1000.0	3148
 NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-04	0.01	1.00E-07	true	true	0.05	1000.0	3149
 NonlinearDiffusion	RoW	ROS34PRW	Ascher3	1.0	1.00E-08	1.00E-05	0.01	1.00E-08	true	true	0.05	1000.0	3150
@@ -194,4 +194,5 @@ NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	4.00E-02	1.00E-03	0.01	1.00E-06	false	t
 NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	2.00E-02	1.00E-04	0.01	1.00E-07	false	true	0.05	1000.0	3193
 NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	1.00E-02	1.00E-05	0.01	1.00E-08	false	true	0.05	1000.0	3194
 NonlinearDiffusion	IRK	ROS34PRW	KC35	1.0	5.00E-03	1.00E-06	0.01	1.00E-09	false	true	0.05	1000.0	3195
+
 
