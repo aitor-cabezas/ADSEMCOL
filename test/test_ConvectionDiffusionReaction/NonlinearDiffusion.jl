@@ -36,7 +36,7 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
 
     function Tfun(t::Float64)
 
-        T = 1.0 + sin(omegat*t)
+        T = 2.0 + sin(omegat*t)
 
         return T
 
