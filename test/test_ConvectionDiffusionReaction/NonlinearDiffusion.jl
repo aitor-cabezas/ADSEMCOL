@@ -1,6 +1,6 @@
 include("test_ConvectionDiffusionReaction.jl")
 
-function NonlinearDiffusion_test(;hp::Float64=0.01, FesOrder::Int64=5, tf::Float64=2.5, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",  CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0,CW::Float64=50.0,SC::Int64=0,
+function NonlinearDiffusion_test(;hp::Float64=0.01, FesOrder::Int64=5, tf::Float64=10.0, TMSName::String= "RoW",RKMethod::String="Ascher3", RoWMethod::String="ROS34PRW",  CSS::Float64=0.1, CDC::Float64=5.0, CFLa::Float64=1.0,CW::Float64=50.0,SC::Int64=0,
 A::Float64=0.0, B::Float64= 1.0, DT0::Float64= 0.05,omegat::Float64=1.0, Lx::Float64 = 1.0, Ly::Float64=1.0, H1::Float64=0.0, H2::Float64=1.0,
 PlotFig::Bool=true, Deltat_SaveFig::Float64=0.01, SaveFig::Bool=false, Nt_SaveFig::Int=typemax(Int),
 SaveRes::Bool=false, Nt_SaveRes::Int=typemax(Int), Deltat_SaveRes::Float64=0.01,
@@ -27,8 +27,8 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
 
     function dvdxv(x::Vector{Matrix{Float64}})
 
-        dvdx          =   @. 8*(pi/(Lx/2))^2*cos((pi*x[1])/(Lx/2))*sin((pi*x[2])/(Lx/2))
-        dvdy          =   @. -8*(pi/(Ly/2))^2*cos((pi*x[1])/(Ly/2))*sin((pi*x[2])/(Ly/2))
+        dvdx          =   @. 0.0*8*(pi/(Lx/2))^2*cos((pi*x[1])/(Lx/2))*sin((pi*x[2])/(Lx/2))
+        dvdy          =   @. 0.0*(-8*(pi/(Ly/2))^2*cos((pi*x[1])/(Ly/2))*sin((pi*x[2])/(Ly/2)))
 
         return [dvdx,dvdy]
 
@@ -36,7 +36,7 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
 
     function Tfun(t::Float64)
 
-        T = 2.0 + sin(omegat*t)
+        T = 1.0 + sin(omegat*t)
 
         return T
 
@@ -90,40 +90,40 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
         
     end
 
-#     function H(t::Float64, x::Vector{Matrix{Float64}})
-# 
-#         Xaux   =   Xfun(x)
-#         Taux   =   Tfun(t)
-# 
-#         Hfun   =   @. Xaux*Taux
-# 
-#         return [Hfun]
-# 
-#     end
-
     function H(t::Float64, x::Vector{Matrix{Float64}})
 
+        Xaux   =   Xfun(x)
+        Taux   =   Tfun(t)
 
-        Hfun   =   @. (H2-H1)*x[2] + H1 + sin(pi*x[2])
+        Hfun   =   @. Xaux*Taux
 
         return [Hfun]
 
     end
 
-#     function H0(x::Vector{Matrix{Float64}})
+#     function H(t::Float64, x::Vector{Matrix{Float64}})
 # 
-#         T0  = Tfun(0.0)
-#         X0  = Xfun(x)
 # 
-#         return [@.X0*T0]
+#         Hfun   =   @. (H2-H1)*x[2] + H1 + sin(pi*x[2])
+# 
+#         return [Hfun]
 # 
 #     end
 
     function H0(x::Vector{Matrix{Float64}})
-        
-        return H(0.0,x)
+
+        T0  = Tfun(0.0)
+        X0  = Xfun(x)
+
+        return [@.X0*T0]
 
     end
+
+#     function H0(x::Vector{Matrix{Float64}})
+#         
+#         return H(0.0,x)
+# 
+#     end
 
     function DT(t::Float64,x::Vector{Matrix{Float64}},u::Vector{Matrix{Float64}})
 
@@ -165,7 +165,7 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
         dconvdxi = @. T*X*(da1 + da2) + a1*T*dX1 + a2*T*dX2
         ddiffdxi = @. DTm*T*(d2X1 + d2X2) + dDTm*T^2*(dX1^2 + dX2^2)
 
-        return [@. 0*dHdt + 0*dconvdxi - 0*ddiffdxi]
+        return [@. dHdt + dconvdxi - ddiffdxi]
 
     end
 
@@ -177,7 +177,7 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
         d2X1, d2X2  = d2Xdxv2fun(x)
         dX1, dX2    = dXdxvfun(x)
 
-        dQdu = @. 0*(-dDTm*T*(d2X1 + d2X2) - T^2*(dX1^2 + dX2^2)*d2DTm)
+        dQdu = @. (-dDTm*T*(d2X1 + d2X2) - T^2*(dX1^2 + dX2^2)*d2DTm)
         return [dQdu]
 
     end
@@ -248,7 +248,8 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
         
     # Set Boundary Conditions
     
-    solver.BC           = [ BCW(BC_Dirichlet), BCW(BC_Neumann), BCW(BC_Dirichlet),BCW(BC_Neumann)]
+#     solver.BC           = [ BCW(BC_Dirichlet), BCW(BC_Neumann), BCW(BC_Dirichlet),BCW(BC_Neumann)]
+    solver.BC           = [ BCW(BC_Dirichlet), BCW(BC_Dirichlet), BCW(BC_Dirichlet),BCW(BC_Dirichlet)]
     
     #Set initial condition:
 
