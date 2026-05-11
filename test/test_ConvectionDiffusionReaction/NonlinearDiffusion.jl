@@ -370,7 +370,7 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
 
     #Save results:
         if SaveRes
-            save("$(ResUbi)LIRKHyp_SC$(SC)_1000.jld2", "StudyCase", "NonlinearDiffusion",
+            save("$(ResUbi)LIRKHyp_SC$(SC)_1000.jld2", "StudyCase", "NonlinearDiffusion","errL2L2", errL2L2,
                 "ConvFlag", ConvFlag, "solver", save(solver) )
         end
     

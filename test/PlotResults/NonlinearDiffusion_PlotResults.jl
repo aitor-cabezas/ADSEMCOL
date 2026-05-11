@@ -1,20 +1,23 @@
 include("PlotResults.jl")
 
-function CompareTMS_NonlinearDiffusion(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::Int64; q::Real=2.0, 
-    SaveFig::Bool=false, w::Float64=8.50, h::Float64=8.50)
+function CompareTMS_NonlinearDiffusion(StudyCase::String; SaveFig::Bool=false, w::Float64=8.50, h::Float64=8.50)
+# function CompareTMS_NonlinearDiffusion(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::Int64; q::Real=2.0, 
+#     SaveFig::Bool=false, w::Float64=8.50, h::Float64=8.50)
 
     SCvv0   = NaN
     SCvv1   = NaN
+    nb      = NaN
     
     if StudyCase=="NCD1a"
     
         #TimeAdapt: YES
-        SCvv1       = [3001:3004,
-                       3005:3008,
-                       3009:3012,
-                       3013:3016,
-                       3017:3020,
-                       3021:3024]
+        SCvv1       = [3000:3003,
+                       3004:3007,
+                       3008:3011,
+                       3012:3015,
+                       3016:3019,
+                       3020:3023]
+        nb = 1000
 
 
     elseif StudyCase=="NCD1b"
@@ -27,6 +30,8 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String,nb::Int64,SCRef::Int64,
                        3041:3044,
                        3045:3048]
         
+        nb = 1000
+        
     elseif StudyCase=="NCD2a"
     
         #TimeAdapt: YES
@@ -37,6 +42,8 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String,nb::Int64,SCRef::Int64,
                        3066:3069,
                        3070:3073]
         
+        nb = 1000
+        
     elseif StudyCase=="NCD2b"
 
         #TimeAdapt: No
@@ -46,6 +53,8 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String,nb::Int64,SCRef::Int64,
                        3086:3089,
                        3090:3093,
                        3094:3097]
+        
+        nb = 1000
                         
         
     
@@ -59,6 +68,8 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String,nb::Int64,SCRef::Int64,
                        3115:3118,
                        3119:3122]
         
+        nb = 1000
+        
     elseif StudyCase=="NCD3b"
     
         #TimeAdapt: No
@@ -68,6 +79,8 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String,nb::Int64,SCRef::Int64,
                        3135:3138,
                        3139:3142,
                        3143:3146]
+        
+        nb = 1000
         
     elseif StudyCase=="NCD4a"
     
@@ -79,6 +92,8 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String,nb::Int64,SCRef::Int64,
                        3164:3167,
                        3168:3171]
         
+        nb = 1000
+        
     elseif StudyCase=="NCD4b"
     
         #TimeAdapt: No
@@ -89,26 +104,28 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String,nb::Int64,SCRef::Int64,
                        3188:3191,
                        3192:3195]
         
+        nb = 1000
+        
     end
         
     #------------------------------------------------------------
     
-    Deltatvv1,tCPUvv1,CFLvv1,TIMethodNamevv1             = GetVbles(SCvv1, ["Deltat","tCPU","CFLmax", "TIMethodName"], nb=nb)
-    errv1      = []
-    errvv1     = Vector{Vector{Any}}()
-    SCvv1r     = reduce(vcat,SCvv1)
-    
-    errv1 = RefErr_Lq(SCvv1r,nb,SCRef,nbRef;q=q)
-
-    n = 1
-    for i=1:length(SCvv1)
-
-        k       =   length(SCvv1[i])
-        serrv1  =   errv1[n:n+k-1]
-        push!(errvv1,serrv1)
-        n       =   n + k
-
-    end
+    Deltatvv1,errvv1,tCPUvv1,CFLvv1,TIMethodNamevv1             = GetVbles(SCvv1, ["Deltat","errL2L2","tCPU","CFLmax", "TIMethodName"], nb=nb)
+#     errv1      = []
+#     errvv1     = Vector{Vector{Any}}()
+#     SCvv1r     = reduce(vcat,SCvv1)
+#     
+#     errv1 = RefErr_Lq(SCvv1r,nb,SCRef,nbRef;q=q)
+# 
+#     n = 1
+#     for i=1:length(SCvv1)
+# 
+#         k       =   length(SCvv1[i])
+#         serrv1  =   errv1[n:n+k-1]
+#         push!(errvv1,serrv1)
+#         n       =   n + k
+# 
+#     end
 
 #     @show(errvv1)
 #     @show(typeof(errvv1))
