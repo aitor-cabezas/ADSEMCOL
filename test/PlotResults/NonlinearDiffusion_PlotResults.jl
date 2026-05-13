@@ -23,12 +23,12 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String; SaveFig::Bool=false, w
     elseif StudyCase=="NCD1b"
 
         #TimeAdapt: No
-        SCvv1       = [3025:3028,
-                       3029:3032,
-                       3033:3036,
-                       3037:3040,
-                       3041:3044,
-                       3045:3048]
+        SCvv1       = [3024:3027,
+                       3028:3031,
+                       3032:3035,
+                       3036:3039,
+                       3040:3043,
+                       3044:3047]
         
         nb = 1000
         
