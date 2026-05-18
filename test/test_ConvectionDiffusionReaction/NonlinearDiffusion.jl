@@ -147,19 +147,19 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
 
     end
 
-    function Q(t::Float64,x::Vector{Matrix{Float64}},u::Vector{Matrix{Float64}})
+    function Q(t::Float64,x::Vector{Matrix{Float64}})
 
         X   = Xfun(x)
         T   = Tfun(t)
         dT  = dTdtfun(t)
 
-        a1, a2      = a(t,x,u)
+        a1, a2      = a(t,x,H(t,x))
         da1, da2    = dvdxv(x)
         dX1, dX2    = dXdxvfun(x)
         d2X1, d2X2  = d2Xdxv2fun(x)
 
-        DTm   = DT(t,x,u)[1]
-        dDTm  = dDT_du(t,x,u)[1]
+        DTm   = DT(t,x,H(t,x))[1]
+        dDTm  = dDT_du(t,x,H(t,x))[1]
 
         dHdt     = @. X * dT
         dconvdxi = @. T*X*(da1 + da2) + a1*T*dX1 + a2*T*dX2
@@ -169,15 +169,16 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
 
     end
 
-    function dQ_du(t::Float64,x::Vector{Matrix{Float64}},u::Vector{Matrix{Float64}})
+    function dQ_du(t::Float64,x::Vector{Matrix{Float64}})
 
-        T           = Tfun(t)
-        dDTm        = dDT_du(t,x,u)[1]
-        d2DTm       = d2DT_du2(t,x,u)[1]
-        d2X1, d2X2  = d2Xdxv2fun(x)
-        dX1, dX2    = dXdxvfun(x)
-
-        dQdu = @. (-dDTm*T*(d2X1 + d2X2) - T^2*(dX1^2 + dX2^2)*d2DTm)
+#         T           = Tfun(t)
+#         dDTm        = dDT_du(t,x,u)[1]
+#         d2DTm       = d2DT_du2(t,x,u)[1]
+#         d2X1, d2X2  = d2Xdxv2fun(x)
+#         dX1, dX2    = dXdxvfun(x)
+# 
+#         dQdu = @. (-dDTm*T*(d2X1 + d2X2) - T^2*(dX1^2 + dX2^2)*d2DTm)
+        dQdu    =   zeros(size(x[1]))
         return [dQdu]
 
     end
@@ -209,8 +210,8 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
                           FWt21((t,x,u)->da_du(t,x,u)),
                           FWt21((t,x,u)->DT(t,x,u)),
                           FWt21((t,x,u)->dDT_du(t,x,u)),
-                          FWt21((t,x,u)->Q(t,x,u)),
-                            FWt21((t,x,u)->dQ_du(t,x,u)) )
+                          FWt11((t,x)->Q(t,x)),
+                            FWt11((t,x)->dQ_du(t,x)) )
     
     #Mesh:
     MeshFile                = "$(@__DIR__)/../../temp/NonlinearDiffusion$(SC).geo"

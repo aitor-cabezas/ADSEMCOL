@@ -35,8 +35,8 @@ mutable struct NCD <: ConvectionDiffusionModel
     da_du           ::FWt21                       #Function to compute the jacobians
     DT              ::FWt21                       #Returns thermal diffusion DT(u)
     dDT_du          ::FWt21                       #Function to compute the jacobians
-    Q               ::FWt21                       #Returns source term
-    dQ_du           ::FWt21                       #Function to compute the jacobians
+    Q               ::FWt11                       #Returns source term
+    dQ_du           ::FWt11                       #Function to compute the jacobians
     
     #Stabilization variables:
     CSS             ::Float64   #Subgrid stabilization
@@ -49,7 +49,7 @@ mutable struct NCD <: ConvectionDiffusionModel
     
 end
 
-function NCD(a::FWt21,da_du::FWt21,DT::FWt21,dDT_du::FWt21,Q::FWt21,dQ_du::FWt21)
+function NCD(a::FWt21,da_du::FWt21,DT::FWt21,dDT_du::FWt21,Q::FWt11,dQ_du::FWt11)
 
     NCDS              = NCD()
     NCDS.a            = a
@@ -208,9 +208,9 @@ function FluxSource!(model::NCD, _qp::TrIntVars, ComputeJ::Bool)
     SSDiffusiveFlux!(model, DTSS, dDT_du, u, duB, ComputeJ,_qp.fB, _qp.dfB_du, _qp.dfB_dgraduB)
 
     #Evaluate source terms:
-    _qp.Q[1]            .= model.Q(t,x,u)[1]
+    _qp.Q[1]            .= model.Q(t,x)[1]
     if ComputeJ
-        _qp.dQ_du[1]    .= model.dQ_du(t,x,u)[1]
+        _qp.dQ_du[1]    .= model.dQ_du(t,x)[1]
     end
 
     #Deltat imposed by CFL=1 (do not use @avxt, it does not work well with $ symbol)
