@@ -4,9 +4,23 @@ function NonlinearDiffusion_test(;hp::Float64=0.01, FesOrder::Int64=5, tf::Float
 A::Float64=0.0, B::Float64= 1.0, DT0::Float64= 0.05,omegat::Float64=1.0, Lx::Float64 = 1.0, Ly::Float64=1.0, H1::Float64=0.0, H2::Float64=1.0,
 PlotFig::Bool=true, Deltat_SaveFig::Float64=0.01, SaveFig::Bool=false, Nt_SaveFig::Int=typemax(Int),
 SaveRes::Bool=false, Nt_SaveRes::Int=typemax(Int), Deltat_SaveRes::Float64=0.01,
-Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3,AMA_SizeOrder::Int=FesOrder,AMA_AnisoOrder::Int=2,AMA_ProjN::Int=1,AMA_ProjOrder::Int=0,SpaceAdapt::Bool=true, TimeAdapt::Bool=true)
+Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolT::Float64=1e-3,TolS::Float64=1e-2*TolT,AMA_SizeOrder::Int=FesOrder,AMA_AnisoOrder::Int=2,AMA_ProjN::Int=1,AMA_ProjOrder::Int=0,SpaceAdapt::Bool=true, TimeAdapt::Bool=true)
 
     #---------------------------------------------------------------------
+    
+    
+    #Mesh:
+    MeshFile                = "$(@__DIR__)/../../temp/NonlinearDiffusion$(SC).geo"
+    NX                      = Int(ceil(1.0/(hp*FesOrder)))
+    NY                      = Int(ceil(1.0/(hp*FesOrder)))
+    x1                      = 0.0
+    x2                      = Lx
+    xc                      = x2/2
+    y1                      = 0.0
+    y2                      = Ly
+    yc                      = y2/2
+    TrMesh_Rectangle_Create!(MeshFile, x1, x2, NX, y1, y2, NY)
+
     #PROBLEM DATA:
     
     function a(t::Float64,x::Vector{Matrix{Float64}},u::Vector{Matrix{Float64}})
@@ -53,8 +67,9 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
     function Xfun(x::Vector{Matrix{Float64}})
 
         sigma  =  y2/6
-        EXPON  =  @. ((x[1]-x2/2)^2 + (x[2]-y2/2)^2)/(sigma*sigma)
-        X      =  @. x[1]*(x2-x[1])*x[2]*(y2-x[2])*exp(-EXPON)
+        EXPON  =  @. ((x[1]-xc)^2 + (x[2]-yc)^2)/(sigma*sigma)
+        P      =  @. x[1]*(x2-x[1])*x[2]*(y2-x[2])
+        X      =  @. P*exp(-EXPON)
         
         return X
 
@@ -62,12 +77,15 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
     
     function dXdxvfun(x::Vector{Matrix{Float64}})
         
-        sigma  =  y2/6
-        EXPON  =  @.  ((x[1]-x2/2)^2 + (x[2]-y2/2)^2)/(sigma*sigma)
-        dXdx   =  @.  x[2]*(y2-x[2])*exp(-EXPON)*
-                              ((x2-2*x[1])-(2/sigma^2)*(x2*x[1]^2-x[1]^3-x[1]*x2^2/2+x2/2*x[1]^2))
-        dXdy   =  @.  x[1]*(x2-x[1])*exp(-EXPON)*
-                              ((y2-2*x[2])-(2/sigma^2)*(y2*x[2]^2-x[2]^3-x[2]*y2^2/2+y2/2*x[2]^2))
+        sigma       =  y2/6
+        EXPON       =  @.  ((x[1]-xc)^2 + (x[2]-yc)^2)/(sigma*sigma)
+        P           =  @.  x[1]*(x2-x[1])*x[2]*(y2-x[2])
+        dPdx        =  @.  x[2]*(y2-x[2])*(x2-2*x[1])
+        dEXPONdx    =  @.  2*(x[1]-xc)/sigma^2
+        dXdx        =  @.  exp(-EXPON)*(dPdx-P*dEXPONdx)
+        dPdy        =  @.  x[1]*(x2-x[1])*(y2-2*x[2])
+        dEXPONdy    =  @.  2*(x[2]-yc)/sigma^2
+        dXdy        =  @.  exp(-EXPON)*(dPdy-P*dEXPONdy)
 
         
         return [dXdx,dXdy]
@@ -76,14 +94,19 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
     
     function d2Xdxv2fun(x::Vector{Matrix{Float64}})
         
-        sigma  =  y2/6
-        EXPON  =  @.((x[1]-x2/2).^2 + (x[2]-y2/2).^2)/(sigma*sigma)
-        Px     =  @.(x2-2*x[1])-(2/sigma^2)*(x2*x[1].^2-x[1].^3-x[1]*x2^2/2+x2/2*x[1].^2)
-        Pprimx =  @. -2/sigma^2*(2*x[1]*x2 - 3*x[1].^2 -1/2*x2^2 + 2*x[1]*x2/2) - 2
-        d2Xdx2 =  @. x[1]*(x2-x[1])*exp(-EXPON)*((-2/sigma^2)*(x[1]-x2/2)*Px+Pprimx)
-        Py     =  @.(y2-2*x[2])-(2/sigma^2)*(y2*x[2].^2-x[2].^3-x[2]*y2^2/2+y2/2*x[2].^2)
-        Pprimy =  @. -2/sigma^2*(2*x[2]*y2 - 3*x[2].^2 -1/2*y2^2 + 2*x[2]*y2/2) - 2
-        d2Xdy2 =  @. x[2]*(y2-x[2])*exp(-EXPON)*((-2/sigma^2)*(x[2]-y2/2)*Py+Pprimy)
+        sigma       =  y2/6
+        EXPON       =  @.   ((x[1]-xc).^2 + (x[2]-yc).^2)/(sigma*sigma)
+        P           =  @.   x[1]*(x2-x[1])*x[2]*(y2-x[2])
+        dPdx        =  @.   x[2]*(y2-x[2])*(x2-2*x[1])
+        d2Pdx2      =  @.   -2*x[2]*(y2-x[2])
+        dEXPONdx    =  @.   2*(x[1]-xc)/sigma^2
+        d2EXPONdx2  =  @.   2/sigma^2  
+        d2Xdx2      =  @.   exp(-EXPON)*d2Pdx2 - 2*dPdx*dEXPONdx*exp(-EXPON) + P*dEXPONdx^2*exp(-EXPON)-P*d2EXPONdx2*exp(-EXPON)
+        dPdy        =  @.   x[1]*(x2-x[1])*(y2-2*x[2])
+        d2Pdy2      =  @.   -2*x[1]*(x2-x[1])
+        dEXPONdy    =  @.   2*(x[2]-yc)/sigma^2
+        d2EXPONdy2  =  @.   2/sigma^2
+        d2Xdy2      =  @.   exp(-EXPON)*d2Pdy2 - 2*dPdy*dEXPONdy*exp(-EXPON) + P*dEXPONdy^2*exp(-EXPON)-P*d2EXPONdy2*exp(-EXPON)
         
         
         return [d2Xdx2,d2Xdy2]
@@ -213,16 +236,6 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolS::Float64=1e-5,TolT::Float64=1e-3
                           FWt11((t,x)->Q(t,x)),
                             FWt11((t,x)->dQ_du(t,x)) )
     
-    #Mesh:
-    MeshFile                = "$(@__DIR__)/../../temp/NonlinearDiffusion$(SC).geo"
-    NX                      = Int(ceil(1.0/(hp*FesOrder)))
-    NY                      = Int(ceil(1.0/(hp*FesOrder)))
-    x1                      = 0.0
-    x2                      = Lx
-    y1                      = 0.0
-    y2                      = Ly
-    TrMesh_Rectangle_Create!(MeshFile, x1, x2, NX, y1, y2, NY)
-
     #Load LIRKHyp solver structure with default data. Modify the default data if necessary:
     solver                  = LIRKHyp_Start(ProblemData)
     solver.ProblemName      = "NonlinearDiffusion"
