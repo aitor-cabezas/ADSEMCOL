@@ -70,7 +70,7 @@ function bflux!(model::NCD, BC::Dirichlet, _bqp::TrBintVars, ComputeJ::Bool)
         end
 
         #Extrapolate natural viscous flux:
-        SSDiffusiveFlux!(model, DT, dDT_du, u, du, ComputeJ, flux, dflux_du, dflux_dgradu)
+        DiffusiveFlux!(model, DT, dDT_du, u, du, ComputeJ, flux, dflux_du, dflux_dgradu)
         fn, dfn_du, dfn_dgradu = ProjectFlux(flux, dflux_du, dflux_dgradu, nb, ComputeJ)
         #
         @mlv _bqp.f[1]                  += fn[1]

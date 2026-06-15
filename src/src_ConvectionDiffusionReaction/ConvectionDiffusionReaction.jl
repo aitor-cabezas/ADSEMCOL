@@ -30,7 +30,7 @@ abstract type ConvectionDiffusionModel <: ConstModels end
 
 mutable struct NCD <: ConvectionDiffusionModel
 
-    #Model's characteristic fields (nonlinear diffusion).
+    #Model's characteristic fields (nonlinear convection - diffusion).
     a               ::FWt21                       #Returns velocity [vx, vy]
     da_du           ::FWt21                       #Function to compute the jacobians
     DT              ::FWt21                       #Returns thermal diffusion DT(u)
@@ -193,25 +193,21 @@ function FluxSource!(model::NCD, _qp::TrIntVars, ComputeJ::Bool)
 
     #Nonlinear convective and diffusive fluxes:
 
-    NonlinearDiffusionFlux!(model, u, du, _qp.f, _qp.df_du, _qp.df_dgradu,a,DT,dDT_du,ComputeJ)
+    NonlinearFlux!(model, u, du, _qp.f, _qp.df_du, _qp.df_dgradu, a, da_du , DT, dDT_du, ComputeJ)
 
     #Evaluate subgrid stabilization flux:
     A_Elems             = areas(_qp.Integ2D.mesh)
     h_Elems             = @tturbo @. sqrt(A_Elems)
     hp                  = h_Elems./_qp.FesOrder * ones(1, _qp.nqp)
     DTSS                = [@tturbo @. model.CSS*lambda_max*hp]
-    if ComputeJ
-        dDT_du        = model.dDT_du(t,x,u)
-        #         @avxt @. depsilon_du        = model.CSS*hp * (a[1]*da_du[1]+a[2]*da_du[2])/anorm
-    end
-    
-    SSDiffusiveFlux!(model, DTSS, dDT_du, u, duB, ComputeJ,_qp.fB, _qp.dfB_du, _qp.dfB_dgraduB)
+
+    SSDiffusiveFlux!(model, DTSS, duB, ComputeJ, _qp.fB, _qp.dfB_du, _qp.dfB_dgraduB)
 
     #Evaluate source terms:
     _qp.Q[1]            .= model.Q(t,x)[1]
-    if ComputeJ
-        _qp.dQ_du[1]    .= model.dQ_du(t,x)[1]
-    end
+#     if ComputeJ
+#         _qp.dQ_du[1]    .= model.dQ_du(t,x)[1]
+#     end
 
     #Deltat imposed by CFL=1 (do not use @avxt, it does not work well with $ symbol)
     hp_min              = _hmin(_qp.Integ2D.mesh)./_qp.FesOrder .* ones(1, _qp.nqp)

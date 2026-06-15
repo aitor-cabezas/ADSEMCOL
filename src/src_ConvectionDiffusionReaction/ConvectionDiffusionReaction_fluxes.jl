@@ -87,7 +87,7 @@ function source!(model::Oregonator, u::Vector{Matrix{Float64}}, Q::Vector{Matrix
     
 end
 
-function NonlinearDiffusionFlux!(model::NCD,u::Vector{Matrix{Float64}},du::Matrix{Matrix{Float64}},flux::Matrix{Matrix{Float64}},dflux_du::Array{Matrix{Float64},3},dflux_dgradu::Array{Matrix{Float64},4},a::Vector{Matrix{Float64}},DT::Vector{Matrix{Float64}},dDT_du::Vector{Matrix{Float64}},ComputeJ::Bool)
+function NonlinearFlux!(model::NCD,u::Vector{Matrix{Float64}},du::Matrix{Matrix{Float64}},flux::Matrix{Matrix{Float64}},dflux_du::Array{Matrix{Float64},3},dflux_dgradu::Array{Matrix{Float64},4},a::Vector{Matrix{Float64}},da_du::Vector{Matrix{Float64}},DT::Vector{Matrix{Float64}},dDT_du::Vector{Matrix{Float64}},ComputeJ::Bool)
 
     nSpecies = 1
 
@@ -111,8 +111,8 @@ function NonlinearDiffusionFlux!(model::NCD,u::Vector{Matrix{Float64}},du::Matri
        
        #dfconv/du
        
-       @tturbo @. dflux_du[1,1,1]   +=   a[1]
-       @tturbo @. dflux_du[1,2,1]   +=   a[2]
+       @tturbo @. dflux_du[1,1,1]   +=   a[1] + da_du[1]*u[1]
+       @tturbo @. dflux_du[1,2,1]   +=   a[2] + da_du[2]*u[1]
        
        #dfdiff/du
        
@@ -126,6 +126,37 @@ function NonlinearDiffusionFlux!(model::NCD,u::Vector{Matrix{Float64}},du::Matri
         
     end
     
+end
+
+function DiffusiveFlux!(model::NCD,DT::Vector{Matrix{Float64}},dDT_du::Vector{Matrix{Float64}},u::Vector{Matrix{Float64}},du::Matrix{Matrix{Float64}},ComputeJ::Bool,flux::Matrix{Matrix{Float64}},dflux_du::Array{Matrix{Float64},3},dflux_dgradu::Array{Matrix{Float64},4})
+
+    nSpecies = 1
+
+
+    for alpha = 1:nSpecies, i= 1:2
+
+        @tturbo @. flux[alpha,i]   +=   -DT[1]*du[alpha,i]
+
+    end
+
+    if ComputeJ
+
+        #dfdiff/du
+
+        @tturbo @. dflux_du[1,1,1]   +=   -du[1,1]*dDT_du[1]
+        @tturbo @. dflux_du[1,2,1]   +=   -du[1,2]*dDT_du[1]
+
+        #dfdiff/dfdiffdgradu
+
+        @tturbo @. dflux_dgradu[1,1,1,1]   += -DT[1]
+        @tturbo @. dflux_dgradu[1,2,1,2]   += -DT[1]
+
+    end
+
+
+
+    return
+
 end
 
 #Add monolithic diffusion:
@@ -150,8 +181,8 @@ function epsilonFlux!(model::Oregonator, tau::MFloat, duB::Matrix{MFloat},
     
 end
 
-function SSDiffusiveFlux!(model::NCD, DTSS::Vector{MFloat}, dDT_du::Vector{MFloat},
-                        u::Vector{MFloat}, du::Matrix{MFloat},
+function SSDiffusiveFlux!(model::NCD, DTSS::Vector{MFloat},
+                        du::Matrix{MFloat},
                         ComputeJ::Bool, flux::Matrix{MFloat}, dflux_du::Array{MFloat,3},
                         dflux_dgradu::Array{MFloat,4}) where MFloat<:Matrix{Float64}
 
@@ -159,8 +190,6 @@ function SSDiffusiveFlux!(model::NCD, DTSS::Vector{MFloat}, dDT_du::Vector{MFloa
      flux[1,2]  .-= DTSS[1].*du[1,2]
     
     if ComputeJ #&& false
-        dflux_du[1,1,1]        .-= dDT_du[1].*du[1,1]
-        dflux_du[1,2,1]        .-= dDT_du[1].*du[1,2]
         dflux_dgradu[1,1,1,1]  .-= DTSS[1]
         dflux_dgradu[1,2,1,2]  .-= DTSS[1]
     end
