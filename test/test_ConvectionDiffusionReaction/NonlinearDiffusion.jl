@@ -70,13 +70,22 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolT::Float64=1e-3,TolS::Float64=1e-2
         EXPON  =  @. ((x[1]-xc)^2 + (x[2]-yc)^2)/(sigma*sigma)
         P      =  @. x[1]*(x2-x[1])*x[2]*(y2-x[2])
         X      =  @. P*exp(-EXPON)
-        
+
         return X
 
     end
+
+#     function Xfun(x::Vector{Matrix{Float64}})
+#
+# #         Pxy = @. x[1]^5 - 10*x[1]^3*x[2]^2 + 5*x[1]*x[2]^4 + 2*x[1]^3 - 3*x[1]*x[2]^2 + x[2]^5
+#           Pxy =  @.  x[1]*(x2-x[1])*x[2]*(y2-x[2])
+#
+#         return Pxy
+#
+#     end
     
     function dXdxvfun(x::Vector{Matrix{Float64}})
-        
+
         sigma       =  y2/6
         EXPON       =  @.  ((x[1]-xc)^2 + (x[2]-yc)^2)/(sigma*sigma)
         P           =  @.  x[1]*(x2-x[1])*x[2]*(y2-x[2])
@@ -87,31 +96,59 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolT::Float64=1e-3,TolS::Float64=1e-2
         dEXPONdy    =  @.  2*(x[2]-yc)/sigma^2
         dXdy        =  @.  exp(-EXPON)*(dPdy-P*dEXPONdy)
 
-        
+
         return [dXdx,dXdy]
-        
+
     end
+
+#     function dXdxvfun(x::Vector{Matrix{Float64}})
+#
+#
+# #         dPxydx = @. 5*x[1]^4 - 30*x[1]^2*x[2]^2 + 5*x[2]^4 + 6*x[1]^2 - 3*x[2]^2
+# #         dPxydy = @. -20*x[1]^3*x[2] + 20*x[1]*x[2]^3 - 6*x[1]*x[2] + 5*x[2]^4
+#
+#         dPxydx        =  @.  x[2]*(y2-x[2])*(x2-2*x[1])
+#
+#         dPxydy        =  @.  x[1]*(x2-x[1])*(y2-2*x[2])
+#
+#
+#         return [dPxydx,dPxydy]
+#
+#     end
     
     function d2Xdxv2fun(x::Vector{Matrix{Float64}})
-        
+
         sigma       =  y2/6
         EXPON       =  @.   ((x[1]-xc).^2 + (x[2]-yc).^2)/(sigma*sigma)
         P           =  @.   x[1]*(x2-x[1])*x[2]*(y2-x[2])
         dPdx        =  @.   x[2]*(y2-x[2])*(x2-2*x[1])
         d2Pdx2      =  @.   -2*x[2]*(y2-x[2])
         dEXPONdx    =  @.   2*(x[1]-xc)/sigma^2
-        d2EXPONdx2  =  @.   2/sigma^2  
+        d2EXPONdx2  =  @.   2/sigma^2
         d2Xdx2      =  @.   exp(-EXPON)*d2Pdx2 - 2*dPdx*dEXPONdx*exp(-EXPON) + P*dEXPONdx^2*exp(-EXPON)-P*d2EXPONdx2*exp(-EXPON)
         dPdy        =  @.   x[1]*(x2-x[1])*(y2-2*x[2])
         d2Pdy2      =  @.   -2*x[1]*(x2-x[1])
         dEXPONdy    =  @.   2*(x[2]-yc)/sigma^2
         d2EXPONdy2  =  @.   2/sigma^2
         d2Xdy2      =  @.   exp(-EXPON)*d2Pdy2 - 2*dPdy*dEXPONdy*exp(-EXPON) + P*dEXPONdy^2*exp(-EXPON)-P*d2EXPONdy2*exp(-EXPON)
-        
-        
+
+
         return [d2Xdx2,d2Xdy2]
-        
+
     end
+
+# function d2Xdxv2fun(x::Vector{Matrix{Float64}})
+#      d2Pxydx2      =  @.   -2*x[2]*(y2-x[2])
+#      d2Pxydy2      =  @.   -2*x[1]*(x2-x[1])
+#
+#
+# #     d2Pxydx2 = @. 20*x[1]^3 - 60*x[1]*x[2]^2 + 12*x[1]
+# #     d2Pxydy2 = @. -20*x[1]^3 + 60*x[1]*x[2]^2 - 6*x[1] + 20*x[2]^3
+#
+#
+#     return [d2Pxydx2,d2Pxydy2]
+#
+# end
 
     function H(t::Float64, x::Vector{Matrix{Float64}})
 
@@ -150,16 +187,18 @@ Deltat0::Float64=1e-4,AMA_MaxIter::Int=200,TolT::Float64=1e-3,TolS::Float64=1e-2
 
     function DT(t::Float64,x::Vector{Matrix{Float64}},u::Vector{Matrix{Float64}})
 
-        H0x = H0(x)[1]
-        DTfun = @. DT0 + B*(u[1] - H0x)^2
+#         H0x = H0(x)[1]
+#         DTfun = @. DT0 + B*(u[1] - H0x)^2
+        DTfun = @. DT0 + B*(u[1])^2
         return [DTfun]
 
     end
 
     function dDT_du(t::Float64,x::Vector{Matrix{Float64}},u::Vector{Matrix{Float64}})
 
-        H0x = H0(x)[1]
-        dDT_dufun = @. 2*B*(u[1] - H0x)
+#         H0x = H0(x)[1]
+#         dDT_dufun = @. 2*B*(u[1] - H0x)
+        dDT_dufun = @. 2*B*(u[1])
         return [dDT_dufun]
 
     end
