@@ -2026,7 +2026,7 @@ function IRK_Step!(solver::SolverData)
             LSOutput    = Anderson(FW_NLS((u,gres)->QNResidual1!(u,gres)), 
                             u_k, 
                             AbsTolX=1.0*sqrt(length(u_k))*TolA, RelTolX=0.0, 
-                            AbsTolG=0.0*sqrt(length(u_k))*TolA, RelTolG=0.0, 
+                            AbsTolG=10.0*sqrt(length(u_k))*TolA, RelTolG=0.0,
                             memory=100, MaxIter=solver.LS_iters_max, Display="final")
             solver.tLS  += time()-t_ini
             u_k         .= LSOutput[1]
