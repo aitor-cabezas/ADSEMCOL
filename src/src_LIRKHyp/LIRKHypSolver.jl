@@ -2382,7 +2382,7 @@ function RoW_Step!(solver::SolverData)
     solver.fv           = zeros(length(u_n))
     solver.bv           = zeros(length(u_n))
     sumakj              = zeros(length(u_n)) #Summatory of aij*kj
-    sumgkj              = zeros(length(u_n)) #Summatory of aij*kj
+    sumgkj              = zeros(length(u_n)) #Summatory of gamma_ij*kj
     sumbi               = zeros(length(u_n)) #Summatory of bi*ki
     hsumbi              = zeros(length(u_n)) #Summatory of hatbi*ki
     etaS_np1            = 0.0

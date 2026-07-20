@@ -87,6 +87,10 @@ function GetVbles(SC::Int, vbles::Vector{String}; nb::Int=1)
             xout[ii]    = solver.mesh
         elseif vble=="nDof"
             xout[ii]    = solver.fes.nDof
+        elseif vble=="Deltat0"
+            xout[ii]    = solver.Deltat0
+        elseif vble=="TolS_max"
+            xout[ii]    = solver.TolS_max
         elseif vble=="NDOF"
             xout[ii]    = GetNDof(SC, nb)
         elseif vble=="nElems"
@@ -541,7 +545,7 @@ end
 
 #Write tables:
 function TableVbles(SCv::AbstractVector{Int}, vbles::Vector{String}, formats::Vector{String}; 
-    nb::Int=1, LastSeparator::String="\t \\\\ \n")
+    nb::Int=1000, SCRef::Int64=2000, nbRef=1000, q=2, LastSeparator::String="\t \\\\ \n")
 
     nSC     = length(SCv)
     nVars   = length(vbles)
@@ -578,6 +582,37 @@ function TableVbles(SCv::AbstractVector{Int}, vbles::Vector{String}, formats::Ve
                     table   = string(table, "No adapt.", sep[jj])
                 else
                     table   = string(table, sprintf1(formats[jj], var), sep[jj])
+                end
+                
+            elseif vble=="e_stRef"
+    
+                varv    = RefErr_Lq(collect(SCv),nb,SCRef,nbRef;q=q)
+                var     = varv[ii]
+                table   = string(table, sprintf1(formats[jj], var), sep[jj])
+                                 
+            elseif vble=="Ref_EOC"
+                if ii==1
+                    table   = string(table, "-", sep[jj])
+                else
+                        
+                    xv  =   []
+                    for k=1:length(SCv)
+                        
+                        push!(xv,GetVbles(SCv[k], nb, ["Deltat0"])[1])
+                        
+                    end
+                    
+                    yv = RefErr_Lq(collect(SCv), nb, SCRef, nbRef; q=q)
+                    EOCv = ExpOrderConv([xv], [yv])[1]
+                    var = EOCv[ii]
+                    
+#                     errv        = RefErr_Lq(collect(SCv),nb,SCRef,nbRef;q=q)
+#                     err_i       = errv[ii]
+#                     err_im1     = errv[ii-1]
+#                     Deltat0_i   = GetVbles(SCv[ii], nb, ["Deltat0"])[1]
+#                     Deltat0_im1 = GetVbles(SCv[ii-1], nb, ["Deltat0"])[1]
+#                     var         = log(err_i/err_im1) / log(Deltat0_i/Deltat0_im1)
+                    table       = string(table, sprintf1(formats[jj], var), sep[jj])
                 end
             else
                 var     = GetVbles(SCv[ii], nb, [vble])[1]

@@ -94,15 +94,111 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String; SaveFig::Bool=false, w
         
         nb = 1000
         
-    elseif StudyCase=="NCD4b"
+    elseif StudyCase=="NCD8"
     
         #TimeAdapt: No
-        SCvv1       = [3172:3175,
+        SCvv1       = [3168:3171,
+                       3172:3175,
                        3176:3179,
                        3180:3183,
                        3184:3187,
-                       3188:3191,
-                       3192:3195]
+                       3188:3191]
+        
+        nb = 1000
+        
+    elseif StudyCase=="NCD9"
+    
+        #TimeAdapt: No
+        SCvv1       = [3192:3195,
+                       3196:3199,
+                       3200:3203,
+                       3204:3207,
+                       3208:3211,
+                       3212:3215]
+        
+        nb = 1000
+        
+    elseif StudyCase=="NCD10"
+    
+        #TimeAdapt: No
+        SCvv1       = [3216:3219,
+                       3220:3223,
+                       3224:3227,
+                       3228:3231,
+                       3232:3235,
+                       3236:3239]
+        
+        nb = 1000
+        
+    elseif StudyCase=="NCD11"
+    
+        #TimeAdapt: No
+        SCvv1       = [3240:3243,
+                       3244:3247,
+                       3248:3251,
+                       3252:3255,
+                       3256:3259,
+                       3260:3263]
+        
+        nb = 1000
+        
+    elseif StudyCase=="NCD12"
+    
+        #TimeAdapt: No
+        SCvv1       = [3264:3267,
+                       3268:3271,
+                       3272:3275,
+                       3276:3279,
+                       3280:3283,
+                       3284:3287]
+        
+        nb = 1000
+        
+    elseif StudyCase=="NCD13"
+    
+        #TimeAdapt: No
+        SCvv1       = [3288:3291,
+                       3292:3295,
+                       3296:3299,
+                       3300:3303,
+                       3304:3307,
+                       3308:3311]
+        
+        nb = 1000
+        
+    elseif StudyCase=="NCD14"
+    
+        #TimeAdapt: No
+        SCvv1       = [3312:3315,
+                       3316:3319,
+                       3320:3323,
+                       3324:3327,
+                       3328:3331,
+                       3332:3335]
+        
+        nb = 1000
+        
+    elseif StudyCase=="NCD15"
+    
+        #TimeAdapt: No
+        SCvv1       = [3336:3339,
+                       3340:3343,
+                       3344:3347,
+                       3348:3351,
+                       3352:3355,
+                       3356:3359]
+        
+        nb = 1000
+    
+    elseif StudyCase=="NCD16"
+    
+        #TimeAdapt: No
+        SCvv1       = [3360:3363,
+                       3364:3367,
+                       3368:3371,
+                       3372:3375,
+                       3376:3379,
+                       3380:3383]
         
         nb = 1000
         

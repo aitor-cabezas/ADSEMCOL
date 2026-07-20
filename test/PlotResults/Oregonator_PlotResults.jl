@@ -141,3 +141,63 @@ function Contour_Oregonator(SC::Int, nb::Int; SaveFig::Bool=false, w::Float64=8.
     return
     
 end
+
+
+function TableResults_Oregonator(StudyCase::String)
+
+    vbles       = [ "TolS_max", "NDOF", "hmean", "TIMethodName", "Deltat0", "LS_mean", "e_stRef", "Ref_EOC", "tCPU", "CFLmax" ]
+                    
+    formats     = [ "%.2E",         "%d",       "%.2E",
+                    "%s",           "%.2E",     "%d",   "%.2E",     
+                    "%.2f",         "%.1f",     "%.2E" ]
+    
+    header      = string("\$Tol_{S}\$ & \$\\NDOF\$ & \$h/p\$",
+                        "& TMS & \$\\tau\$ & \$S_{iters}\$", 
+                        "& \$e_{ST}\$ & \$\\EOC\$ & \$t_{CPU}[s]\$",
+                        " & \$\\CFL^{max}\$",
+                        "\\\\")
+                        
+    #------------------------------------------------------------
+    
+    SCvv1   = NaN
+    SCRef   = NaN 
+    nb      = NaN
+    nbRef   = NaN
+    q       = NaN
+    
+    if StudyCase=="Ob" 
+        #TimeAdapt: NO
+        SCvv1       = [2025:2028,
+                       2029:2032,
+                       2033:2036,
+                       2037:2040,
+                       2041:2044,
+                       2045:2048]
+
+        nb          = 1000
+        SCRef       = 2000
+        nbRef       = 1000
+        q           = 2
+        
+    end
+    
+    #Save results 
+    table           = string("\\begin{tabular}{", 
+                        repeat("r", length(vbles)), 
+                        "} \n", 
+                        "\\hline \n", 
+                        header, 
+                        "\\hline \n")
+    for ii=1:length(SCvv1)
+        SCv         = SCvv1[ii]
+        table_SC    = TableVbles(SCv, vbles, formats, nb=nb;SCRef=SCRef,nbRef=nbRef,q=q)
+        table       = string(table, table_SC, "\\hline \n")
+    end
+    table           = string(table, "\\end{tabular}")
+    print(table)
+    
+    write("$(FigUbi)Oregonator_Ob.txt", table)
+    
+    return
+    
+end
