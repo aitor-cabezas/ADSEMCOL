@@ -5,9 +5,9 @@
 # NOTE: SBATCH parameters must be defined first. Do not define any variable before them.
 
 # Editable options:
-#SBATCH --job-name=NonlinearDiffusion
+#SBATCH --job-name=Oregonator
 #SBATCH --partition=cn2
-#SBATCH --array=169-384%10
+#SBATCH --array=51-74%10
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=20G
 
