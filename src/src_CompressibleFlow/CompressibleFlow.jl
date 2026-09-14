@@ -54,7 +54,7 @@ Base.@kwdef mutable struct GasFP <: ReactiveGas
     
     #Compressible flow characteristic fields:
     epsilon         ::Float64           = 0.0
-    nu              ::Float64           = 0.0
+    muref           ::Float64           = 0.0
     beta            ::Float64           = 0.0
     kappa_rho_cv    ::Float64           = 0.0
     gamma           ::Float64           = 1.4
@@ -65,11 +65,27 @@ Base.@kwdef mutable struct GasFP <: ReactiveGas
     CW              ::Float64           = 50.0  #Boundary penalty (50.0-200.0 for IIPG)
     
     #Reaction's characteristic fields:
-    hfF             ::Float64   = 500.0 #Q0=hFF-hFP=gamma/(gamma-1)*(RTf-RT0)/YF0
-    hfP             ::Float64   = 0.0
-    D               ::Float64   = kappa_rho_cv / gamma / 1.0
-    B               ::Float64   = 1000*exp(10)
-    RTa             ::Float64   = 10*6
+    hfF             ::Float64           = 500.0 #Q0=hFF-hFP=gamma/(gamma-1)*(RTf-RT0)/YF0
+    hfP             ::Float64           = 0.0
+    Dref            ::Float64           = kappa_rho_cv / gamma / 1.0
+    B               ::Float64           = 1000*exp(10)
+    RTa             ::Float64           = 10*6
+    RTref           ::Float64           = 1.0
+    alpha           ::Float64           = 0.7
+
+    #fresh gas data
+    rho0            ::Float64           = 1.0
+    YF0             ::Float64           = 1.0
+    u0              ::Float64           = 1.0
+    delta_u         ::Float64           = 0.0
+    RT0             ::Float64           = 1.0
+    p0              ::Float64           = 1.0
+
+    #sponge layer
+    sponge          ::Bool              = true
+    sigma0          ::Float64           = 10.0
+    width           ::Float64           = 40.0
+    s               ::Int               = 4.0
     
     #Dependent variables. NOTE: DepVars contains variables to be evaluated when
     #Jacobian is not necessary. DepVarsJ contains variables to be evaluated when
@@ -102,15 +118,15 @@ Base.@kwdef mutable struct GasFXP <: ReactiveGas
     CW              ::Float64           = 50.0  #Boundary penalty (50.0-200.0 for IIPG)
     
     #Reaction's characteristic fields:
-    hfF             ::Float64   = 0.0 
-    hfX             ::Float64   = 0.0
-    hfP             ::Float64   = NaN
-    D               ::Float64   = kappa_rho_cv / gamma / 1.0
-    BI              ::Float64   = NaN
-    BB              ::Float64   = NaN
-    BR              ::Float64   = NaN
-    RTI             ::Float64   = NaN
-    RTB             ::Float64   = NaN
+    hfF             ::Float64           = 0.0 
+    hfX             ::Float64           = 0.0
+    hfP             ::Float64           = NaN
+    D               ::Float64           = kappa_rho_cv / gamma / 1.0
+    BI              ::Float64           = NaN
+    BB              ::Float64           = NaN
+    BR              ::Float64           = NaN
+    RTI             ::Float64           = NaN
+    RTB             ::Float64           = NaN
     
     #Dependent variables. NOTE: DepVars contains variables to be evaluated when
     #Jacobian is not necessary. DepVarsJ contains variables to be evaluated when
@@ -127,6 +143,7 @@ Base.@kwdef mutable struct GasFXP <: ReactiveGas
 
     
 end
+include("GasFXP_reac.jl")
 
 Base.@kwdef mutable struct GasH2 <: ReactiveGas
 
@@ -144,7 +161,7 @@ Base.@kwdef mutable struct GasH2 <: ReactiveGas
     #Reaction's characteristic fields:
     species         ::Vector{String}    = [ "H2", "O2", "H2O", "N2", "He",
                                             "Ar", "CO", "CO2", "H", "OH", 
-                                            "HO2", "H2O2 O", "O" ]
+                                            "HO2", "H2O2", "O" ]
     coef1           ::Matrix{Float64}   = H2_coef1() # 200-1000 K NASA
     coef2           ::Matrix{Float64}   = H2_coef2() # 1000-6000 K NASA
     coef3           ::Matrix{Float64}   = H2_coef3() # 6000-20000 K NASA
@@ -401,14 +418,18 @@ function DepVars(model::GasFP, t::Float64, x::Vector{<:AMF64},
         elseif vble=="epsilon"
             xout[ivar]      = [fill(model.epsilon, size(u[1]))]
         elseif vble=="nu"
-            xout[ivar]      = [fill(model.nu, size(u[1]))]
+            mu              = @tturbo @. model.muref*(RT/model.RTref)^model.alpha
+            xout[ivar]      = [@tturbo @. mu/rho]
         elseif vble=="beta"
             xout[ivar]      = [fill(model.beta, size(u[1]))]
         elseif vble=="kappa_rho_cv"
-            xout[ivar]      = [fill(model.kappa_rho_cv, size(u[1]))]
+            xout[ivar]      = [@tturbo @. model.gamma * model.Dref*(RT/model.RTref)^model.alpha /rho]
         elseif vble=="D_penalty"
-            D_penalty       = max(model.epsilon, model.nu, model.beta, model.kappa_rho_cv)
-            xout[ivar]      = [fill(D_penalty, size(u[1]))]
+            mu              = @tturbo @. model.muref*(RT/model.RTref)^model.alpha
+            nu              = @tturbo @. mu/rho
+            kappa_rho_cv    = @tturbo @. model.gamma * model.Dref*(RT/model.RTref)^model.alpha /rho
+            D_penalty       = @tturbo @. max(model.epsilon, nu, model.beta, kappa_rho_cv)
+            xout[ivar]      = [D_penalty]
         elseif vble=="rhos"
             xout[ivar]      = [@tturbo @. rho*(log(abs(p))-gamma*log(abs(rho)))]
         elseif vble=="gamma"
@@ -423,8 +444,8 @@ function DepVars(model::GasFP, t::Float64, x::Vector{<:AMF64},
             xout[ivar][2]   = @tturbo @. hfP + RT*(gamma/(gamma-1.0))
         elseif vble=="D_i"
             xout[ivar]      = Vector{Matrix{Float64}}(undef,nSpecies)
-            xout[ivar][1]   = fill(model.D, size(u[1]))
-            xout[ivar][2]   = fill(model.D, size(u[1]))
+            xout[ivar][1]   = @tturbo @. model.Dref*model.rho0*(RT/model.RTref)^model.alpha / rho
+            xout[ivar][2]   = @tturbo @. model.Dref*model.rho0*(RT/model.RTref)^model.alpha /rho
         elseif vble=="mdot_i"
             xout[ivar]      = Vector{Matrix{Float64}}(undef,nSpecies)
             xout[ivar][1]   = @tturbo @. -model.B*u[1]*min(1e40, exp(-model.RTa/RT))
@@ -571,7 +592,7 @@ function DepVars(model::GasFXP, t::Float64, x::Vector{<:AMF64},
             xout[ivar][2]   = fill(model.D, size(u[1]))
             xout[ivar][3]   = fill(model.D, size(u[1]))
         elseif vble=="mdot_i"
-            xout[ivar]      = calc_mdot(model,u[1:nSpecies],T)
+            xout[ivar]      = calc_mdot(model,u[1:nSpecies],RT)
         elseif vble=="dmdot_ij"
         
             #Allocate:
@@ -580,12 +601,13 @@ function DepVars(model::GasFXP, t::Float64, x::Vector{<:AMF64},
             
             # Derivatives of mdot w.r.t. rhoYi, RT:
             dm_drhoYi, dm_drhoRT        = calc_dmdot(model,u[1:nSpecies],RT)
-        
+
             #Internal energy for each specie:
-            e_i         = [ @. hfF + RT/(gamma-1.0), 
-                            @. hfX + RT/(gamma-1.0), 
-                            @. hfP + RT/(gamma-1.0) ]
-                            
+            e_i         = Vector{Matrix{Float64}}(undef,nSpecies)
+            e_i[1]      = @tturbo @. hfF + RT/(gamma-1.0)
+            e_i[2]      = @tturbo @. hfX + RT/(gamma-1.0)
+            e_i[3]      = @tturbo @. hfP + RT/(gamma-1.0)
+            
             # Derivatives w.r.t. conservative variables applying chain rule.
             # Note that 
             #   dRT/drhoY_k = (gamma-1)/rho * (v^2/2 - e_k)
@@ -593,15 +615,15 @@ function DepVars(model::GasFXP, t::Float64, x::Vector{<:AMF64},
             #   dRT/drhoE   = (gamma-1)/rho
             for II=1:model.nSpecies
                 for JJ=1:model.nSpecies
-                    @tturbo @. dmdot_ij[II,JJ]  = dm_drhoYi[II,JJ] + 
-                                                    dm_drhoRT[II]*(gamma-1.0)/rho*
-                                                        ((vx^2+vy^2)/2-e_i[JJ])
+                    @tturbo @. dmdot_ij[II,JJ]      = dm_drhoYi[II,JJ] + 
+                                                        dm_drhoRT[II]*(gamma-1.0)/rho*
+                                                        ((rhovx*rhovx+rhovy*rhovy)/(2*rho*rho)-e_i[JJ])
                 end
-                @tturbo @. dmdot_ij[II,nSpecies+1]  = - dm_drhoRT[II]*(gamma-1.0)/rho*vx
-                @tturbo @. dmdot_ij[II,nSpecies+2]  = - dm_drhoRT[II]*(gamma-1.0)/rho*vy
+                @tturbo @. dmdot_ij[II,nSpecies+1]  = - dm_drhoRT[II]*(gamma-1.0)/(rho*rho)*rhovx
+                @tturbo @. dmdot_ij[II,nSpecies+2]  = - dm_drhoRT[II]*(gamma-1.0)/(rho*rho)*rhovy
                 @tturbo @. dmdot_ij[II,nSpecies+3]  = dm_drhoRT[II]*(gamma-1.0)/rho
             end
-                                                    
+            
             #Reshape output into vector:
             xout[ivar]          = reshape(dmdot_ij, :)
             
@@ -632,7 +654,7 @@ end
 
 function DepVars(model::GasH2, t::Float64, x::Vector{<:AMF64},
                  u::Vector{<:AMF64}, vout::Vector{String})
-
+    
     nSpecies    = model.nSpecies
     nVars       = model.nVars
     rho         = sum(u[1:nSpecies])
@@ -877,14 +899,11 @@ function FluxSource!(model::GasModel, _qp::TrIntVars, ComputeJ::Bool)
     
     #Subgrid stabilization - monolithic diffusion:
     lambda          = udep[DepVarIndex(model,"lambda_max")][1]
-#     vx              = udep[DepVarIndex(model,"vx")][1]
-#     vy              = udep[DepVarIndex(model,"vy")][1]
 #     h_Elems         = _hElems(_qp.Integ2D.mesh)
     A_Elems         = areas(_qp.Integ2D.mesh)
     h_Elems         = @tturbo @. sqrt(A_Elems)
     hp              = h_Elems./_qp.FesOrder * ones(1, _qp.nqp)
     tau             = @tturbo @. model.CSS*lambda*hp
-#     tau             = @tturbo @. model.CSS*sqrt(vx^2+vy^2)*hp
     epsilonFlux!(model, tau, duB, ComputeJ, _qp.fB, _qp.dfB_dgraduB)
     
     #Source terms:
@@ -895,13 +914,12 @@ function FluxSource!(model::GasModel, _qp::TrIntVars, ComputeJ::Bool)
     hp_min              = _hmin(_qp.Integ2D.mesh)./_qp.FesOrder * ones(1, _qp.nqp)
     D_max               = @. max(epsilon, nu, beta, kappa_rho_cv)
     Deltat_CFL_lambda   = @. $minimum(hp_min/lambda)
-#     Deltat_CFL_lambda   = @. $minimum(hp_min/sqrt(vx^2+vy^2))
     Deltat_CFL_D        = @. $minimum(hp_min^2/D_max)
     Deltat_CFL_reac     = @. $minimum(1.0/lambda_reac)
     _qp.Deltat_CFL      = min(Deltat_CFL_lambda, Deltat_CFL_D, Deltat_CFL_reac)
     #Print info:
     if ComputeJ
-        println("Deltat_conv=", sprintf1("%.2E", Deltat_CFL_lambda), 
+        println("Deltat_hyp=", sprintf1("%.2E", Deltat_CFL_lambda), 
                 ", Deltat_diff=", sprintf1("%.2E", Deltat_CFL_D),
                 ", Deltat_source=", sprintf1("%.2E", Deltat_CFL_reac))
     end

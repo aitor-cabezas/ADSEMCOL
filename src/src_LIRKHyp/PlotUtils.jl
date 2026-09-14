@@ -104,11 +104,11 @@ vble::String; cmap::String="jet", symmetry::String="none",z1::Float64=NaN, z2::F
     uNodes = SolutionAtNodes(solver.u, solver.fes)
 
     v_plot = nothing
-    if vble == "u"
+    if vble == "u_1"
         v_plot = collect(vec(uNodes[1]))
-    elseif vble == "v"
+    elseif vble == "u_2"
         v_plot = collect(vec(uNodes[2]))
-    elseif vble == "w"
+    elseif vble == "u_3"
         v_plot = collect(vec(uNodes[3]))
     else
         error("Unknown variable $vble")

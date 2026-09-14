@@ -1,7 +1,7 @@
 include("PlotResults.jl")
 
 function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::Int64; q::Real=2.0, 
-    SaveFig::Bool=false, w::Float64=8.50, h::Float64=8.50)
+    SaveFig::Bool=false, w::Float64=8.1, h::Float64=7.5)
 
     SCvv0   = NaN
     SCvv1   = NaN
@@ -50,8 +50,14 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
     @show(errvv1)
     @show(typeof(errvv1))
     EOCvv1                                                      = ExpOrderConv(Deltatvv1, errvv1)
-    
-    PyPlotFigure(w=w, h=h, bottom=1.5)
+    PyPlotFigure(
+        w       = w,
+        h       = h,
+        bottom  = 1.1,
+        top     = 0.2,
+        left    = 1.3,
+        right   = 0.4
+        )
     colorv                      = PyPlotColors("jet2", length(SCvv1))
     leg                         = String[]
     for ii=1:length(SCvv1)
@@ -60,17 +66,31 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
 
         push!(leg,TIMethodNamevv1[ii][1])
     end
-    ylabel("err")
-    xlabel(latexstring("\\tau"))
-    legend(leg, fontsize=8)
-    tick_params(axis="both", which="both", labelsize=TickSize)
+    ax = gca()
+
+    for label in ax.get_xticklabels(which="minor")
+        if occursin("3", label.get_text())
+            label.set_visible(false)
+        end
+    end
+    ylabel(latexstring(GetString("errL2L2")))
+    xlabel(latexstring("\\tau^n"))
+    legend(leg, loc="best", fontsize=6)
+    tick_params(axis="both", which="both", labelsize=7.0)
     grid("on")
     if SaveFig
-        savefig("$(FigUbi)Oregonator.png", dpi=800, pad_inches=0)
+        savefig("$(FigUbi)SC$(StudyCase)_convergence_Oregonator.png", dpi=800, pad_inches=0)
     end
     
     
-    PyPlotFigure(w=w, h=h, bottom=1.5)
+    PyPlotFigure(
+        w       = w,
+        h       = h,
+        bottom  = 1.1,
+        top     = 0.2,
+        left    = 1.3,
+        right   = 0.4
+        )
     colorv                      = PyPlotColors("jet2", length(SCvv1))
     leg                         = String[]
     for ii=1:length(SCvv1)
@@ -79,16 +99,23 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
 
         push!(leg,TIMethodNamevv1[ii][1])
     end
-    ylabel("err")
-    xlabel("tCPU")
-    legend(leg, fontsize=8)
-    tick_params(axis="both", which="both", labelsize=TickSize)
+    ylabel(latexstring(GetString("errL2L2")))
+    xlabel(latexstring("t_{\\text{CPU}}"))
+    legend(leg, loc="best", fontsize=6)
+    tick_params(axis="both", which="both", labelsize=7.0)
     grid("on")
     if SaveFig
-        savefig("$(FigUbi)Oregonator.png", dpi=800, pad_inches=0)
+        savefig("$(FigUbi)SC$(StudyCase)_err_tCPU_Oregonator.png", dpi=800, pad_inches=0)
     end
            
-    PyPlotFigure(w=w, h=h, bottom=1.5)
+    PyPlotFigure(
+        w       = w,
+        h       = h,
+        bottom  = 1.1,
+        top     = 0.2,
+        left    = 1.3,
+        right   = 0.4
+        )
     colorv                      = PyPlotColors("jet2", length(SCvv1))
     leg                         = String[]
     for ii=1:length(SCvv1)
@@ -97,11 +124,20 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
 
         push!(leg,TIMethodNamevv1[ii][1])
     end
+    ax = gca()
+
+    for label in ax.get_xticklabels(which="minor")
+        if occursin("3", label.get_text())
+            label.set_visible(false)
+        end
+    end
     xlabel(latexstring(GetString("CFLmax")))
-    ylabel(latexstring(GetString("errL2L2")), rotation=0)
-    tick_params(axis="both", which="both", labelsize=TickSize)
+    ylabel(latexstring(GetString("errL2L2")))
+    legend(leg, loc="best", fontsize=6)
+    tick_params(axis="both", which="both", labelsize=7.0)
+    grid("on")
     if SaveFig
-        savefig("$(FigUbi)Oregonator.png", dpi=800, pad_inches=0)
+        savefig("$(FigUbi)SC$(StudyCase)_CFL_Oregonator.png", dpi=800, pad_inches=0)
     end
     
     display(EOCvv1)
@@ -114,8 +150,8 @@ end
 
 
 
-function Contour_Oregonator(SC::Int, nb::Int; SaveFig::Bool=false, w::Float64=8.50, h::Float64=8.50, 
-    PlotVars::Vector{String}=["u", "v", "w"], mFig::Int=2, nFig::Int=2)
+function Contour_Oregonator(SC::Int, nb::Int; SaveFig::Bool=false, w::Float64=5.4, h::Float64=4.3,
+    PlotVars::Vector{String}=["u_1", "u_2", "u_3"], mFig::Int=2, nFig::Int=2)
     
     OregonatorModel = Oregonator()
     FileName        = GetFileName(SC, nb)
@@ -123,17 +159,31 @@ function Contour_Oregonator(SC::Int, nb::Int; SaveFig::Bool=false, w::Float64=8.
     
     for ii=1:length(PlotVars)
         
-        PyPlotFigure(w=w, h=h, bottom=1.5, top=1.0)
+        PyPlotFigure(
+            w       = w,
+            h       = h,
+            bottom  = 0.20,
+            top     = 0.65,
+            left    = 0.00,
+            right   = 1.1
+            )
         
         #Numerical solution:
         PlotContourOregonator(solver, OregonatorModel, PlotVars[ii], delta=1e-4)
+        cb          = colorbar()
+        vmin, vmax  = cb.mappable.get_clim()
+        ticks       = collect(LinRange(vmin, vmax, 5))
+        cb.set_ticks(ticks)
+        cb.update_ticks()
+        cb.ax.yaxis.set_major_formatter(PyPlot.matplotlib.ticker.FormatStrFormatter("%.4f"))
+        cb.ax.tick_params(labelsize=7)
         PlotMesh!(SC, nb, color="w")
-        title(latexstring(PlotVars[ii],"; t^n=", sprintf1("%.2e", solver.t)),fontsize=10)
+        title(latexstring(PlotVars[ii],"; t^n=", sprintf1("%.2e", solver.t)),fontsize=9)
         tick_params(axis="both", which="both", labelsize=TickSize)
         axis("off")
         
         if SaveFig
-            savefig("$(FigUbi)SC$(SC)_Contour_$(PlotVars[ii]).png", dpi=800, pad_inches=0)
+            savefig("$(FigUbi)SC$(SC)_$(nb)_Contour_$(PlotVars[ii]).png", dpi=800, pad_inches=0)
         end
     
     end
@@ -145,14 +195,14 @@ end
 
 function TableResults_Oregonator(StudyCase::String)
 
-    vbles       = [ "TolS_max", "NDOF", "hmean", "TIMethodName", "Deltat0", "LS_mean", "e_stRef", "Ref_EOC", "tCPU", "CFLmax" ]
+    vbles       = [ "TIMethodName", "TolS_max", "NDOF", "hp", "Deltat0", "e_stRef", "Ref_EOC", "tCPU", "CFLmax" ]
                     
-    formats     = [ "%.2E",         "%d",       "%.2E",
-                    "%s",           "%.2E",     "%d",   "%.2E",     
+    formats     = [ "%s",           "%.2E",     "%d",
+                    "%.2E",         "%.2E",     "%.2E",
                     "%.2f",         "%.1f",     "%.2E" ]
     
-    header      = string("\$Tol_{S}\$ & \$\\NDOF\$ & \$h/p\$",
-                        "& TMS & \$\\tau\$ & \$S_{iters}\$", 
+    header      = string("TMS & \$\\text{Tol}_{S}\$ & \$\\NDOF\$ & \$h/p\$ ",
+                        "& \$\\tau\$",
                         "& \$e_{ST}\$ & \$\\EOC\$ & \$t_{CPU}[s]\$",
                         " & \$\\CFL^{max}\$",
                         "\\\\")
@@ -183,7 +233,7 @@ function TableResults_Oregonator(StudyCase::String)
     
     #Save results 
     table           = string("\\begin{tabular}{", 
-                        repeat("r", length(vbles)), 
+                        repeat("l", length(vbles)),
                         "} \n", 
                         "\\hline \n", 
                         header, 

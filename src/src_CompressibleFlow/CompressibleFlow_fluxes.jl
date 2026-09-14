@@ -418,6 +418,7 @@ function MassDiffusionFlux!(model::ReactiveGas,
     h_i             = udep[DepVarIndex(model,"h_i")]    #Vector{MFloat}
     e_i             = udep[DepVarIndex(model,"e_i")]    #Vector{MFloat}
     D_i             = udep[DepVarIndex(model,"D_i")]    #Vector{MFloat}
+    #RT              = udep[DepVarIndex(model, "RT")]
 
     #Extract gradients of rho:
     drho            = [ sum(du[1:nSpecies,1]), sum(du[1:nSpecies,2]) ]
@@ -514,7 +515,6 @@ function TestFlux!(model::GasIdeal,
     
 end
 
-
 #Function that evaluates the source term:
 function source!(model::GasIdeal, t::Float64, x::Vector{MFloat}, 
     u::Vector{MFloat}, udep::Vector{Vector{MFloat}}, 
@@ -547,10 +547,10 @@ function source!(model::GasIdeal, t::Float64, x::Vector{MFloat},
     
 end
 
-function source!(model::ReactiveGas, t::Float64, x::Vector{MFloat}, 
-    u::Vector{MFloat}, udep::Vector{Vector{MFloat}}, 
+function source!(model::GasFP, t::Float64, x::Vector{MFloat},
+    u::Vector{MFloat}, udep::Vector{Vector{MFloat}},
     ComputeJ::Bool, flux::Vector{MFloat}, dflux_du::Matrix{MFloat}) where MFloat<:Matrix{Float64}
-    
+
     nSpecies    = model.nSpecies
     mdot_i      = udep[DepVarIndex(model, "mdot_i")] #Vector{MFloat}
     for ss=1:nSpecies
@@ -562,26 +562,26 @@ function source!(model::ReactiveGas, t::Float64, x::Vector{MFloat},
             @mlv dflux_du[ss,JJ]    += dmdot_ij[ss,JJ]
         end
     end
-    
+
     #Maximum eigenvalue of dmdot_i/drhoY_j:
     lambda_reac     = NaN
     if ComputeJ
-    
+
         #Since the rows nSpecies+1:nVars of dmdot_du are zero, this matrix has at
-        #least (nVars-nSpecies) zero eigenvalues, and the corresponding eigenvectors 
-        #are basis vectors of the null space. 
+        #least (nVars-nSpecies) zero eigenvalues, and the corresponding eigenvectors
+        #are basis vectors of the null space.
         #
         #Also, the eigenvectors "v" corresponding to nonzero eigenvalues "lambda"
         #must satisfy, due to the structure of the matrix dmdot_du,
         #   v[nSpecies+1:nVars]     = 0
         #   v[1:nSpecies]           = lambda * dmdot_du[1:nSpecies,1:nSpecies]*v[1:nSpecies]
-        #that is, we need to find only the eigenvalues of dmdot_du[1:nSpecies,1:nSpecies], 
+        #that is, we need to find only the eigenvalues of dmdot_du[1:nSpecies,1:nSpecies],
         #which indeed have dimensions of 1/time.
         #
-        #To find the maximum eigenvalue, one possibility is to employ Gershgorin circle theorem, 
+        #To find the maximum eigenvalue, one possibility is to employ Gershgorin circle theorem,
         #however, it is easy to show that this is equivalent to employing the inequality
         #   rho(A) <= ||A||
-        #where ||A|| is any norm (the infty-norm if Gershgorin theorem is applied row-wise, 
+        #where ||A|| is any norm (the infty-norm if Gershgorin theorem is applied row-wise,
         #or the 1-norm if it is applied column-wise).
         #Note that this provides a conservative estimation of the maximum eigenvalue,
         #and therefore a pessimistic prediction for the maximum time step number for an
@@ -597,10 +597,120 @@ function source!(model::ReactiveGas, t::Float64, x::Vector{MFloat},
             L1norm                      = @. max(L1norm, sum_rows)
         end
         lambda_reac = L1norm
-        
+
     end
-    
+
+    if model.sponge
+
+        function uInlet(x::Vector{Matrix{Float64}})
+            rho0    = model.rho0
+            YF0     = model.YF0
+            u0      = model.u0
+            delta_u = model.delta_u
+            RT0     = model.RT0
+            p0      = model.p0
+            gamma   = model.gamma
+
+            rhoYF       = @mlv 0.0*x[1] + rho0*YF0
+            rhoYP       = @mlv 0.0*x[1] + rho0*(1.0-YF0)
+            rhovx       = @mlv 0.0*x[1] + rho0*(u0 + delta_u)
+            rhovy       = @mlv 0.0*x[1]
+            rhoE        = @mlv p0/(gamma-1.0) + 0.5*(rhovx^2 + rhovy^2)/rho0 + rhoYF*model.hfF + rhoYP*model.hfP
+            return [rhoYF, rhoYP, rhovx, rhovy, rhoE]
+
+        end
+
+        function sigma_fun1(x::Vector{Matrix{Float64}}, sigma0::Float64, width::Float64, s::Int)
+
+            sigma = @. sigma0/2 * (1.0 - tanh(2*s*(x[1] - width/2)/width))
+            return sigma
+
+        end
+
+        function sigma_fun2(x::Vector{Matrix{Float64}}, sigma0::Float64, width::Float64, m::Int)
+            sigma = @. sigma0 * clamp((width - x[1])/width, 0.0, 1.0)^m
+            return sigma
+        end
+
+        sigma0      = model.sigma0
+        width       = model.width
+        s           = model.s
+        m           = 2
+
+        sigma       = sigma_fun1(x, sigma0, width, s)
+        #sigma       = sigma_fun2(x, sigma0, width, m)
+        uBC         = uInlet(x)
+
+        nSponge = nSpecies + 3
+
+        for ii=1:nSponge
+            flux[ii] += @. -sigma * (u[ii] - uBC[ii])
+        end
+
+        if ComputeJ
+            for ss = 1:nSponge
+                @. dflux_du[ss,ss] += -sigma
+            end
+        end
+    end
+
     return lambda_reac
-    
+
 end
 
+function source!(model::Union{GasFXP,GasH2}, t::Float64, x::Vector{MFloat},
+    u::Vector{MFloat}, udep::Vector{Vector{MFloat}},
+    ComputeJ::Bool, flux::Vector{MFloat}, dflux_du::Matrix{MFloat}) where MFloat<:Matrix{Float64}
+
+    nSpecies    = model.nSpecies
+    mdot_i      = udep[DepVarIndex(model, "mdot_i")] #Vector{MFloat}
+    for ss=1:nSpecies
+        @mlv flux[ss]               += mdot_i[ss]
+    end
+    if ComputeJ
+        dmdot_ij    = reshape(udep[DepVarIndex(model, "dmdot_ij")], nSpecies, nSpecies+3)   #Matrix{Float64}
+        for ss=1:nSpecies, JJ=1:nSpecies+3
+            @mlv dflux_du[ss,JJ]    += dmdot_ij[ss,JJ]
+        end
+    end
+
+    #Maximum eigenvalue of dmdot_i/drhoY_j:
+    lambda_reac     = NaN
+    if ComputeJ
+
+        #Since the rows nSpecies+1:nVars of dmdot_du are zero, this matrix has at
+        #least (nVars-nSpecies) zero eigenvalues, and the corresponding eigenvectors
+        #are basis vectors of the null space.
+        #
+        #Also, the eigenvectors "v" corresponding to nonzero eigenvalues "lambda"
+        #must satisfy, due to the structure of the matrix dmdot_du,
+        #   v[nSpecies+1:nVars]     = 0
+        #   v[1:nSpecies]           = lambda * dmdot_du[1:nSpecies,1:nSpecies]*v[1:nSpecies]
+        #that is, we need to find only the eigenvalues of dmdot_du[1:nSpecies,1:nSpecies],
+        #which indeed have dimensions of 1/time.
+        #
+        #To find the maximum eigenvalue, one possibility is to employ Gershgorin circle theorem,
+        #however, it is easy to show that this is equivalent to employing the inequality
+        #   rho(A) <= ||A||
+        #where ||A|| is any norm (the infty-norm if Gershgorin theorem is applied row-wise,
+        #or the 1-norm if it is applied column-wise).
+        #Note that this provides a conservative estimation of the maximum eigenvalue,
+        #and therefore a pessimistic prediction for the maximum time step number for an
+        #explicit method and an overestimation of the CFL number due to reaction terms.
+        dmdot_ij    = reshape(udep[DepVarIndex(model, "dmdot_ij")], nSpecies, nSpecies+3)   #Matrix{Float64}
+        L1norm      = 0.0*dmdot_ij[1,1]
+        sum_rows    = 0.0*dmdot_ij[1,1]
+        for ii=1:nSpecies
+            BLAS.scal!(0.0, sum_rows)
+            for jj=1:nSpecies
+                @tturbo @. sum_rows     += abs(dmdot_ij[ii,jj])
+            end
+            L1norm                      = @. max(L1norm, sum_rows)
+        end
+        lambda_reac = L1norm
+
+    end
+
+    return lambda_reac
+
+end

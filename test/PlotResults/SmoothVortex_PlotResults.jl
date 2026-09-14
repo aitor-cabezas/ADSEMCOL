@@ -793,7 +793,7 @@ end
 #COMPARISON OF TMS:
 
 function CompareTMS_SmoothVortex(StudyCase::String; 
-    SaveFig::Bool=false, w::Float64=8.50, h::Float64=8.50)
+    SaveFig::Bool=false, w::Float64=5.4, h::Float64=7.5)
 
     SCvv0   = NaN
     SCvv1   = NaN
@@ -955,7 +955,7 @@ function CompareTMS_SmoothVortex(StudyCase::String;
         
      end
        
-       if StudyCase=="prueba_KCR35"
+       if StudyCase=="prueba_KC35"
     
         #TimeAdapt:NO
         
@@ -972,7 +972,14 @@ function CompareTMS_SmoothVortex(StudyCase::String;
     Deltatvv1, errvv1, etavv1,tCPUvv1, CFLvv1,TIMethodNamevv1 = GetVbles(SCvv1, ["Deltat", "errL2L2", "etaL2L2","tCPU","CFLmax", "TIMethodName"], nb=nb)
     EOCvv1                      = ExpOrderConv(Deltatvv1, errvv1)
     
-    PyPlotFigure(w=w, h=h, bottom=1.5)
+    PyPlotFigure(
+        w       = w,
+        h       = h,
+        bottom  = 1.1,
+        top     = 0.2,
+        left    = 1.3,
+        right   = 0.4
+        )
     colorv                      = PyPlotColors("jet2", length(SCvv1))
     leg                         = String[]
     for ii=1:length(SCvv1)
@@ -981,17 +988,31 @@ function CompareTMS_SmoothVortex(StudyCase::String;
 
         push!(leg,TIMethodNamevv1[ii][1])
     end
-    ylabel("err")
-    xlabel(latexstring("\\tau"))
-    legend(leg, fontsize=8)
-    tick_params(axis="both", which="both", labelsize=TickSize)
+    ax = gca()
+
+    for label in ax.get_xticklabels(which="minor")
+        if occursin("6", label.get_text())
+            label.set_visible(false)
+        end
+    end
+    ylabel(latexstring(GetString("errL2L2")))
+    xlabel(latexstring("\\tau^n"))
+    legend(leg, loc="best", fontsize=6)
+    tick_params(axis="both", which="both", labelsize=7.0)
     grid("on")
     if SaveFig
-        savefig("$(FigUbi)SmoothVortex_TimeAdapt1.png", dpi=800, pad_inches=0)
+        savefig("$(FigUbi)SC$(StudyCase)_convergence_Smooth_Vortex.png", dpi=800, pad_inches=0)
     end
     
     
-    PyPlotFigure(w=w, h=h, bottom=1.5)
+    PyPlotFigure(
+        w       = w,
+        h       = h,
+        bottom  = 1.1,
+        top     = 0.2,
+        left    = 1.3,
+        right   = 0.4
+        )
     colorv                      = PyPlotColors("jet2", length(SCvv1))
     leg                         = String[]
     for ii=1:length(SCvv1)
@@ -1000,16 +1021,23 @@ function CompareTMS_SmoothVortex(StudyCase::String;
 
         push!(leg,TIMethodNamevv1[ii][1])
     end
-    ylabel("err")
-    xlabel("tCPU")
-    legend(leg, fontsize=8)
-    tick_params(axis="both", which="both", labelsize=TickSize)
+    ylabel(latexstring(GetString("errL2L2")))
+    xlabel(latexstring("t_{\\text{CPU}}"))
+    legend(leg, loc="best", fontsize=6)
+    tick_params(axis="both", which="both", labelsize=7.0)
     grid("on")
     if SaveFig
-        savefig("$(FigUbi)SmoothVortex_TimeAdapt2.png", dpi=800, pad_inches=0)
+        savefig("$(FigUbi)SC$(StudyCase)_err_tCPU_Smooth_Vortex.png", dpi=800, pad_inches=0)
     end
            
-    PyPlotFigure(w=w, h=h, bottom=1.5)
+    PyPlotFigure(
+        w       = w,
+        h       = h,
+        bottom  = 1.1,
+        top     = 0.2,
+        left    = 1.3,
+        right   = 0.4
+        )
     colorv                      = PyPlotColors("jet2", length(SCvv1))
     leg                         = String[]
     for ii=1:length(SCvv1)
@@ -1019,10 +1047,12 @@ function CompareTMS_SmoothVortex(StudyCase::String;
         push!(leg,TIMethodNamevv1[ii][1])
     end
     xlabel(latexstring(GetString("CFLmax")))
-    ylabel(latexstring(GetString("errL2L2")), rotation=0)
-    tick_params(axis="both", which="both", labelsize=TickSize)
+    ylabel(latexstring(GetString("errL2L2")))
+    legend(leg, loc="best", fontsize=6)
+    tick_params(axis="both", which="both", labelsize=7.0)
+    grid("on")
     if SaveFig
-        savefig("$(FigUbi)SmoothVortex_TimeAdapt3.png", dpi=800, pad_inches=0)
+        savefig("$(FigUbi)SC$(StudyCase)_CFL_SmoothVortex.png", dpi=800, pad_inches=0)
     end
     
     display(EOCvv1)
@@ -1030,3 +1060,210 @@ function CompareTMS_SmoothVortex(StudyCase::String;
     return
     
 end
+
+
+function TableResults_TMS_SmoothVortex(StudyCase::String)
+
+    vbles       = [ "TIMethodName", "TolS_max", "NDOF", "hp", "Deltat0", "errL2L2", "EOC_Deltat0_errL2L2", "tCPU", "CFLmax" ]
+
+    formats     = [ "%s",          "%.2E",     "%d",
+                   "%.2E",           "%.2E",     "%.2E",
+                   "%.2f",         "%.1f",     "%.2E" ]
+
+    header      = string(" TMS & \$\\text{Tol}_{S}\$ & \$\\NDOF\$ ",
+                         "& \$h/p\$ & \$\\tau\$",
+                         "& \$e_{ST}\$ & \$\\EOC\$ & \$t_{CPU}[s]\$",
+                         " & \$\\CFL^{max}\$",
+                         "\\\\")
+
+    #------------------------------------------------------------
+
+    if StudyCase=="normal"
+
+        #TimeAdapt: YES
+        SCvv1       = [1001:1003,
+                       1004:1007,
+                       1008:1011,
+                       1012:1015,
+                       1016:1019,
+                       1020:1023]
+
+        nb          = 1
+
+    end
+
+    if StudyCase=="NoTAdapt"
+
+        #TimeAdapt:NO
+        SCvv1       = [1024:1027,
+                       1028:1031,
+                       1032:1035,
+                       1036:1039,
+                       1040:1043,
+                       1044:1047]
+
+        nb          = 1
+
+    end
+
+    if StudyCase=="KC58_TEST"
+
+        #TimeAdapt:NO
+        SCvv1       = [1048:1051]
+
+        nb          = 1
+
+    end
+
+    if StudyCase=="M1a"
+
+        #TimeAdapt:YES
+        SCvv1       = [1053:1055,
+                       1056:1059,
+                       1061:1063]
+        #                        1064:1067,
+        #                        1068:1071,
+        #                        1072:1075
+
+        nb          = 1
+
+    end
+
+    if StudyCase=="M1b"
+
+        #TimeAdapt:NO
+
+        SCvv1       = [
+            1081:1083,
+            1085:1086,
+            1088:1091,
+            1092:1095,
+            1096:1099]
+
+        nb          = 1
+
+    end
+
+    if StudyCase=="M2a"
+
+        #TimeAdapt:Yes
+
+        SCvv1       = [1101:1103,
+                       1104:1107,
+                       1109:1111,
+                       1112:1115,
+                       1116:1119,
+                       1120:1123]
+
+        nb          = 1
+
+    end
+
+    if StudyCase=="M2b"
+
+        #TimeAdapt:NO
+
+        SCvv1       = [1125:1127,
+                       1128:1131,
+                       1132:1135,
+                       1136:1139,
+                       1140:1143,
+                       1256:1259]
+
+        nb          = 1
+
+    end
+
+    if StudyCase=="M3a"
+
+        #TimeAdapt:YES
+
+        SCvv1       = [1149:1151,
+                       1152:1155,
+                       1157:1159,
+                       1160:1163,
+                       1164:1167,
+                       1168:1171]
+
+        nb          = 1
+
+    end
+
+    if StudyCase=="M3b"
+
+        #TimeAdapt:NO
+
+        SCvv1       = [1172:1175,
+                       1176:1179,
+                       1180:1183,
+                       1184:1187,
+                       1188:1191,
+                       1192:1195]
+
+        nb          = 1
+
+    end
+
+    if StudyCase=="M4a"
+
+        #TimeAdapt:YES
+
+        SCvv1       = [1197:1199,
+                       1200:1203,
+                       1204:1207,
+                       1208:1211,
+                       1212:1215,
+                       1216:1219]
+
+        nb          = 1
+
+    end
+
+    if StudyCase=="M4b"
+
+        #TimeAdapt:NO
+
+        SCvv1       = [1220:1223,
+                       1224:1227,
+                       1228:1231,
+                       1232:1235,
+                       1236:1239,
+                       1240:1243]
+
+        nb          = 1
+
+    end
+
+    if StudyCase=="prueba_KCR35"
+
+        #TimeAdapt:NO
+
+        #         SCvv1       = [1256:1259]
+        SCvv1       = [1260:1263]
+        #         SCvv1       = [1264:1267]
+
+        nb          = 1
+
+    end
+
+    #Save results
+    table           = string("\\begin{tabular}{",
+                                 repeat("l", length(vbles)),
+                                 "} \n",
+                                 "\\hline \n",
+                                 header,
+                                 "\\hline \n")
+        for ii=1:length(SCvv1)
+            SCv         = SCvv1[ii]
+            table_SC    = TableVbles(SCv, vbles, formats, nb=nb)
+            table       = string(table, table_SC, "\\hline \n")
+        end
+        table           = string(table, "\\end{tabular}")
+        print(table)
+
+        write("$(FigUbi)SmoothVortex_$(StudyCase).txt", table)
+
+        return
+
+end
+
