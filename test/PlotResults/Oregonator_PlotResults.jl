@@ -26,6 +26,17 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
                        2045:2048]
                         
         
+    
+    elseif StudyCase=="Oc"
+        #TimeAdapt: NO
+        SCvv1       = [2050:2053,
+                       2054:2057,
+                       2058:2061,
+                       2062:2065,
+                       2066:2069,
+                       2070:2073]
+                        
+        
     end
         
     #------------------------------------------------------------
