@@ -148,13 +148,31 @@ function GetVbles(SC::Int, vbles::Vector{String}; nb::Int=1)
             xout[ii]    = errmassv[II]
         elseif vble=="Soliton_alpha"
             xout[ii]    = load(FileName, "alpha")
-        elseif vble=="TIMethodName" #Time Integration Method Name
+        elseif vble=="TIMethodName" # Time Integration Method Name
             if uppercase(solver.TMSName)=="ROW"
-                 xout[ii] = solver.TMSName*"-"*solver.RoWMethod
-            elseif uppercase(solver.TMSName)=="LIRK" 
-                 xout[ii] = solver.TMSName*"-"*solver.RKMethod
-            elseif uppercase(solver.TMSName)=="IRK" 
-                 xout[ii] = solver.TMSName*"-"*solver.RKMethod
+                if solver.RoWMethod == "ROS34PRW"
+                    xout[ii] = "R34-W"
+                else
+                    xout[ii] = solver.TMSName*"-"*solver.RoWMethod
+                end
+            elseif uppercase(solver.TMSName)=="LIRK"
+                if solver.RKMethod == "Ascher3"
+                    xout[ii] = "ARS443-LIRK"
+                elseif solver.RKMethod == "BPR3"
+                    xout[ii] = "BPR353-LIRK"
+                else
+                    xout[ii] = solver.TMSName*"-"*solver.RKMethod
+                end
+            elseif uppercase(solver.TMSName)=="IRK"
+                if solver.RKMethod == "Ascher3"
+                    xout[ii] = "ARS443-SDIRK"
+                    elseif solver.RKMethod == "BPR3"
+                    xout[ii] = "BPR353-ESDIRK"
+                    elseif solver.RKMethod == "KC35"
+                    xout[ii] = "KC53-ESDIRK"
+                else
+                    xout[ii] = solver.TMSName*"-"*solver.RKMethod
+                end
             end
         else
             xout[ii]    = getfield(solver, Symbol(vble))

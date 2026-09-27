@@ -217,13 +217,13 @@ end
 
 function TableResults_Oregonator(StudyCase::String)
 
-    vbles       = [ "TIMethodName", "TolS_max", "NDOF", "hp", "Deltat0", "e_stRef", "Ref_EOC", "tCPU", "CFLmax" ]
+    vbles       = [ "TIMethodName", "TolS_max", "Deltat0", "e_stRef", "Ref_EOC", "tCPU", "CFLmax" ]
                     
-    formats     = [ "%s",           "%.2E",     "%d",
-                    "%.2E",         "%.2E",     "%.2E",
+    formats     = [ "%s",           "%.2E",
+                    "%.2E",     "%.2E",
                     "%.2f",         "%.1f",     "%.2E" ]
     
-    header      = string("TMS & \$\\text{Tol}_{S}\$ & \$\\NDOF\$ & \$h/p\$ ",
+    header      = string("TMS & \$\\text{Tol}_{S}\$",
                         "& \$\\tau\$",
                         "& \$e_{ST}\$ & \$\\EOC\$ & \$t_{CPU}[s]\$",
                         " & \$\\CFL^{max}\$",
@@ -250,6 +250,20 @@ function TableResults_Oregonator(StudyCase::String)
         SCRef       = 2000
         nbRef       = 1000
         q           = 2
+
+    elseif StudyCase=="Od"
+        #TimeAdapt: NO
+        SCvv1       = [2075:2078,
+                       2079:2082,
+                       2083:2086,
+                       2087:2090,
+                       2091:2094,
+                       2095:2098]
+        nb          = 1000
+        SCRef       = 2074
+        nbRef       = 1000
+        q           = 2
+
         
     end
     
@@ -268,7 +282,7 @@ function TableResults_Oregonator(StudyCase::String)
     table           = string(table, "\\end{tabular}")
     print(table)
     
-    write("$(FigUbi)Oregonator_Ob.txt", table)
+    write("$(FigUbi)Oregonator_SC$(StudyCase).txt", table)
     
     return
     

@@ -976,7 +976,7 @@ function CompareTMS_SmoothVortex(StudyCase::String;
         
     #------------------------------------------------------------
     
-    Deltatvv1, errvv1, etavv1,tCPUvv1, CFLvv1,TIMethodNamevv1 = GetVbles(SCvv1, ["Deltat", "errL2L2", "etaL2L2","tCPU","CFLmax", "TIMethodName"], nb=nb)
+    Deltatvv1, errvv1, etavv1,tCPUvv1, CFLvv1,TIMethodNamevv1 = GetVbles(SCvv1, ["Deltat0", "errL2L2", "etaL2L2","tCPU","CFLmax", "TIMethodName"], nb=nb)
     EOCvv1                      = ExpOrderConv(Deltatvv1, errvv1)
     
     PyPlotFigure(
@@ -1071,14 +1071,14 @@ end
 
 function TableResults_TMS_SmoothVortex(StudyCase::String)
 
-    vbles       = [ "TIMethodName", "TolS_max", "NDOF", "hp", "Deltat0", "errL2L2", "EOC_Deltat0_errL2L2", "tCPU", "CFLmax" ]
+    vbles       = [ "TIMethodName", "TolS_max", "Deltat0", "errL2L2", "EOC_Deltat0_errL2L2", "tCPU", "CFLmax" ]
 
-    formats     = [ "%s",          "%.2E",     "%d",
-                   "%.2E",           "%.2E",     "%.2E",
+    formats     = [ "%s",          "%.2E",
+                    "%.2E",     "%.2E",
                    "%.2f",         "%.1f",     "%.2E" ]
 
-    header      = string(" TMS & \$\\text{Tol}_{S}\$ & \$\\NDOF\$ ",
-                         "& \$h/p\$ & \$\\tau\$",
+    header      = string(" TMS & \$\\text{Tol}_{S}\$ ",
+                         "& \$\\tau\$",
                          "& \$e_{ST}\$ & \$\\EOC\$ & \$t_{CPU}[s]\$",
                          " & \$\\CFL^{max}\$",
                          "\\\\")
@@ -1140,12 +1140,12 @@ function TableResults_TMS_SmoothVortex(StudyCase::String)
 
         #TimeAdapt:NO
 
-        SCvv1       = [
-            1081:1083,
-            1085:1086,
-            1088:1091,
-            1092:1095,
-            1096:1099]
+        SCvv1       =  [
+                        1081:1083,
+                        1085:1086,
+                        1088:1091,
+                        1092:1095,
+                        1096:1099]
 
         nb          = 1
 
@@ -1175,7 +1175,14 @@ function TableResults_TMS_SmoothVortex(StudyCase::String)
                        1132:1135,
                        1136:1139,
                        1140:1143,
-                       1256:1259]
+                       1144:1147]
+
+        #         SCvv1       = [1268:1271,
+        #                        1272:1275,
+        #                        1276:1279,
+        #                        1280:1283,
+        #                        1284:1287,
+        #                        1256:1259]
 
         nb          = 1
 
@@ -1241,7 +1248,7 @@ function TableResults_TMS_SmoothVortex(StudyCase::String)
 
     end
 
-    if StudyCase=="prueba_KCR35"
+    if StudyCase=="prueba_KC35"
 
         #TimeAdapt:NO
 
@@ -1255,7 +1262,8 @@ function TableResults_TMS_SmoothVortex(StudyCase::String)
 
     #Save results
     table           = string("\\begin{tabular}{",
-                                 repeat("l", length(vbles)),
+                                 "l",
+                                 repeat("r", length(vbles)-1),
                                  "} \n",
                                  "\\hline \n",
                                  header,
