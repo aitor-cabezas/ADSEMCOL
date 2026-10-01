@@ -1,7 +1,7 @@
 include("PlotResults.jl")
 
-function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::Int64; q::Real=2.0, 
-    SaveFig::Bool=false, w::Float64=8.1, h::Float64=7.5)
+function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::Int64; q::Real=2.0,
+    SaveFig::Bool=false, w::Float64=8.1, h::Float64=6.5)
 
     SCvv0   = NaN
     SCvv1   = NaN
@@ -52,7 +52,7 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
         
     #------------------------------------------------------------
     
-    Deltatvv1,tCPUvv1,CFLvv1,TIMethodNamevv1             = GetVbles(SCvv1, ["Deltat","tCPU","CFLmax", "TIMethodName"], nb=nb)
+    Deltatvv1,tCPUvv1,CFLvv1,TIMethodNamevv1             = GetVbles(SCvv1, ["Deltat0","tCPU","CFLmax", "TIMethodName"], nb=nb)
     errv1      = []
     errvv1     = Vector{Vector{Any}}()
     SCvv1r     = reduce(vcat,SCvv1)
@@ -96,7 +96,7 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
         end
     end
     ylabel(latexstring(GetString("errL2L2")))
-    xlabel(latexstring("\\tau^n"))
+    xlabel(latexstring("\\tau"))
     legend(leg, loc="best", fontsize=6)
     tick_params(axis="both", which="both", labelsize=7.0)
     grid("on")
@@ -114,16 +114,16 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
         right   = 0.4
         )
     colorv                      = PyPlotColors("jet2", length(SCvv1))
-    leg                         = String[]
+#     leg                         = String[]
     for ii=1:length(SCvv1)
         loglog(tCPUvv1[ii], errvv1[ii], color=colorv[ii], linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
 #         loglog(Deltatvv1[ii], etavv1[ii], color=colorv[ii], linewidth=0.5, linestyle="dashed", marker="s", markersize=3.5)
 
-        push!(leg,TIMethodNamevv1[ii][1])
+#         push!(leg,TIMethodNamevv1[ii][1])
     end
     ylabel(latexstring(GetString("errL2L2")))
-    xlabel(latexstring("t_{\\text{CPU}}"))
-    legend(leg, loc="best", fontsize=6)
+    xlabel(latexstring("t_{\\mathrm{CPU}} [s]"))
+#     legend(leg, loc="best", fontsize=6)
     tick_params(axis="both", which="both", labelsize=7.0)
     grid("on")
     if SaveFig
@@ -139,12 +139,12 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
         right   = 0.4
         )
     colorv                      = PyPlotColors("jet2", length(SCvv1))
-    leg                         = String[]
+#     leg                         = String[]
     for ii=1:length(SCvv1)
         loglog(CFLvv1[ii], errvv1[ii], color=colorv[ii], linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
 #         loglog(Deltatvv1[ii], etavv1[ii], color=colorv[ii], linewidth=0.5, linestyle="dashed", marker="s", markersize=3.5)
 
-        push!(leg,TIMethodNamevv1[ii][1])
+#         push!(leg,TIMethodNamevv1[ii][1])
     end
     ax = gca()
 
@@ -155,7 +155,7 @@ function CompareTMS_Oregonator(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::I
     end
     xlabel(latexstring(GetString("CFLmax")))
     ylabel(latexstring(GetString("errL2L2")))
-    legend(leg, loc="best", fontsize=6)
+#     legend(leg, loc="best", fontsize=6)
     tick_params(axis="both", which="both", labelsize=7.0)
     grid("on")
     if SaveFig
@@ -217,16 +217,16 @@ end
 
 function TableResults_Oregonator(StudyCase::String)
 
-    vbles       = [ "TIMethodName", "TolS_max", "Deltat0", "e_stRef", "Ref_EOC", "tCPU", "CFLmax" ]
-                    
-    formats     = [ "%s",           "%.2E",
+    vbles       = [ "TIMethodName", "TolS_max", "NDOF", "hp", "Deltat0", "e_stRef", "Ref_EOC", "tCPU", "CFLmax" ]
+
+    formats     = [ "%s",           "%.2E",     "%d",       "%.2E",
                     "%.2E",     "%.2E",
                     "%.2f",         "%.1f",     "%.2E" ]
-    
-    header      = string("TMS & \$\\text{Tol}_{S}\$",
+
+    header      = string("Scheme & \$\\TolSmax\$ & \$\\NDOF\$ & \$h/p\$",
                         "& \$\\tau\$",
                         "& \$e_{ST}\$ & \$\\EOC\$ & \$t_{CPU}[s]\$",
-                        " & \$\\CFL^{max}\$",
+                        " & \$\\CFL^{\\max}\$",
                         "\\\\")
                         
     #------------------------------------------------------------
@@ -268,12 +268,13 @@ function TableResults_Oregonator(StudyCase::String)
     end
     
     #Save results 
-    table           = string("\\begin{tabular}{", 
-                        repeat("l", length(vbles)),
-                        "} \n", 
-                        "\\hline \n", 
-                        header, 
-                        "\\hline \n")
+    table           = string("\\begin{tabular}{",
+                                 "l",
+                                 repeat("r", length(vbles)-1),
+                                 "} \n",
+                                 "\\hline \n",
+                                 header,
+                                 "\\hline \n")
     for ii=1:length(SCvv1)
         SCv         = SCvv1[ii]
         table_SC    = TableVbles(SCv, vbles, formats, nb=nb;SCRef=SCRef,nbRef=nbRef,q=q)

@@ -1,6 +1,6 @@
 include("PlotResults.jl")
 
-function CompareTMS_NonlinearDiffusion(StudyCase::String; SaveFig::Bool=false, w::Float64=5.4, h::Float64=7.5)
+function CompareTMS_NonlinearDiffusion(StudyCase::String; SaveFig::Bool=false, w::Float64=5.4, h::Float64=6.5)
 # function CompareTMS_NonlinearDiffusion(StudyCase::String,nb::Int64,SCRef::Int64,nbRef::Int64; q::Real=2.0, 
 #     SaveFig::Bool=false, w::Float64=8.50, h::Float64=8.50)
 
@@ -206,7 +206,7 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String; SaveFig::Bool=false, w
         
     #------------------------------------------------------------
     
-    Deltatvv1,errvv1,tCPUvv1,CFLvv1,TIMethodNamevv1             = GetVbles(SCvv1, ["Deltat","errL2L2","tCPU","CFLmax", "TIMethodName"], nb=nb)
+    Deltatvv1,errvv1,tCPUvv1,CFLvv1,TIMethodNamevv1             = GetVbles(SCvv1, ["Deltat0","errL2L2","tCPU","CFLmax", "TIMethodName"], nb=nb)
 #     errv1      = []
 #     errvv1     = Vector{Vector{Any}}()
 #     SCvv1r     = reduce(vcat,SCvv1)
@@ -236,12 +236,12 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String; SaveFig::Bool=false, w
         right   = 0.4
         )
     colorv                      = PyPlotColors("jet2", length(SCvv1))
-    leg                         = String[]
+#     leg                         = String[]
     for ii=1:length(SCvv1)
         loglog(Deltatvv1[ii], errvv1[ii], color=colorv[ii], linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
 #         loglog(Deltatvv1[ii], etavv1[ii], color=colorv[ii], linewidth=0.5, linestyle="dashed", marker="s", markersize=3.5)
 
-        push!(leg,TIMethodNamevv1[ii][1])
+#         push!(leg,TIMethodNamevv1[ii][1])
     end
     ax = gca()
 
@@ -252,8 +252,8 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String; SaveFig::Bool=false, w
         end
     end
     ylabel(latexstring(GetString("errL2L2")))
-    xlabel(latexstring("\\tau^n"))
-    legend(leg, loc="best", fontsize=6)
+    xlabel(latexstring("\\tau"))
+#     legend(leg, loc="best", fontsize=6)
     tick_params(axis="both", which="both", labelsize=7.0)
     grid("on")
     if SaveFig
@@ -270,16 +270,16 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String; SaveFig::Bool=false, w
         right   = 0.4
         )
     colorv                      = PyPlotColors("jet2", length(SCvv1))
-    leg                         = String[]
+#     leg                         = String[]
     for ii=1:length(SCvv1)
         loglog(tCPUvv1[ii], errvv1[ii], color=colorv[ii], linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
 #         loglog(Deltatvv1[ii], etavv1[ii], color=colorv[ii], linewidth=0.5, linestyle="dashed", marker="s", markersize=3.5)
 
-        push!(leg,TIMethodNamevv1[ii][1])
+#         push!(leg,TIMethodNamevv1[ii][1])
     end
     ylabel(latexstring(GetString("errL2L2")))
-    xlabel(latexstring("t_{\\text{CPU}}"))
-    legend(leg, loc="best", fontsize=6)
+    xlabel(latexstring("t_{\\mathrm{CPU}} [s]"))
+#     legend(leg, loc="best", fontsize=6)
     tick_params(axis="both", which="both", labelsize=7.0)
     grid("on")
     if SaveFig
@@ -295,16 +295,16 @@ function CompareTMS_NonlinearDiffusion(StudyCase::String; SaveFig::Bool=false, w
         right   = 0.4
         )
     colorv                      = PyPlotColors("jet2", length(SCvv1))
-    leg                         = String[]
+#     leg                         = String[]
     for ii=1:length(SCvv1)
         loglog(CFLvv1[ii], errvv1[ii], color=colorv[ii], linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
 #         loglog(Deltatvv1[ii], etavv1[ii], color=colorv[ii], linewidth=0.5, linestyle="dashed", marker="s", markersize=3.5)
 
-        push!(leg,TIMethodNamevv1[ii][1])
+#         push!(leg,TIMethodNamevv1[ii][1])
     end
     xlabel(latexstring(GetString("CFLmax")))
     ylabel(latexstring(GetString("errL2L2")))
-    legend(leg, loc="best", fontsize=6)
+#     legend(leg, loc="best", fontsize=6)
     tick_params(axis="both", which="both", labelsize=7.0)
     grid("on")
     if SaveFig
@@ -325,10 +325,10 @@ function TableResults_TMS_NonlinearDiffusion(StudyCase::String)
     formats     = ["%s",           "%d",       "%.2E",   "%.2E",     "%.2E",
                    "%.2f",         "%.1f",     "%.2E" ]
 
-    header      = string(" TMS & \$\\NDOF\$ & \$h/p\$",
+    header      = string(" Scheme & \$\\NDOF\$ & \$h/p\$",
                          "& \$\\tau\$",
                          "& \$e_{ST}\$ & \$\\EOC\$ & \$t_{CPU}[s]\$",
-                         " & \$\\CFL^{max}\$",
+                         " & \$\\CFL^{\\max}\$",
                          "\\\\")
 
     #------------------------------------------------------------
@@ -441,7 +441,8 @@ function TableResults_TMS_NonlinearDiffusion(StudyCase::String)
 
     #Save results
     table           = string("\\begin{tabular}{",
-                                 repeat("l", length(vbles)),
+                                 "l",
+                                 repeat("r", length(vbles)-1),
                                  "} \n",
                                  "\\hline \n",
                                  header,

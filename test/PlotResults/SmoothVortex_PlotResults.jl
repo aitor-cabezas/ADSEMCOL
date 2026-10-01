@@ -793,7 +793,7 @@ end
 #COMPARISON OF TMS:
 
 function CompareTMS_SmoothVortex(StudyCase::String; 
-    SaveFig::Bool=false, w::Float64=5.4, h::Float64=7.5)
+    SaveFig::Bool=false, w::Float64=5.4, h::Float64=6.5)
 
     SCvv0   = NaN
     SCvv1   = NaN
@@ -988,12 +988,12 @@ function CompareTMS_SmoothVortex(StudyCase::String;
         right   = 0.4
         )
     colorv                      = PyPlotColors("jet2", length(SCvv1))
-    leg                         = String[]
+#     leg                         = String[]
     for ii=1:length(SCvv1)
         loglog(Deltatvv1[ii], errvv1[ii], color=colorv[ii], linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
 #         loglog(Deltatvv1[ii], etavv1[ii], color=colorv[ii], linewidth=0.5, linestyle="dashed", marker="s", markersize=3.5)
 
-        push!(leg,TIMethodNamevv1[ii][1])
+#         push!(leg,TIMethodNamevv1[ii][1])
     end
     ax = gca()
 
@@ -1003,8 +1003,8 @@ function CompareTMS_SmoothVortex(StudyCase::String;
         end
     end
     ylabel(latexstring(GetString("errL2L2")))
-    xlabel(latexstring("\\tau^n"))
-    legend(leg, loc="best", fontsize=6)
+    xlabel(latexstring("\\tau"))
+#     legend(leg, loc="best", fontsize=6)
     tick_params(axis="both", which="both", labelsize=7.0)
     grid("on")
     if SaveFig
@@ -1021,16 +1021,16 @@ function CompareTMS_SmoothVortex(StudyCase::String;
         right   = 0.4
         )
     colorv                      = PyPlotColors("jet2", length(SCvv1))
-    leg                         = String[]
+#     leg                         = String[]
     for ii=1:length(SCvv1)
         loglog(tCPUvv1[ii], errvv1[ii], color=colorv[ii], linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
 #         loglog(Deltatvv1[ii], etavv1[ii], color=colorv[ii], linewidth=0.5, linestyle="dashed", marker="s", markersize=3.5)
 
-        push!(leg,TIMethodNamevv1[ii][1])
+#         push!(leg,TIMethodNamevv1[ii][1])
     end
     ylabel(latexstring(GetString("errL2L2")))
-    xlabel(latexstring("t_{\\text{CPU}}"))
-    legend(leg, loc="best", fontsize=6)
+    xlabel(latexstring("t_{\\mathrm{CPU}} [s]"))
+#     legend(leg, loc="best", fontsize=6)
     tick_params(axis="both", which="both", labelsize=7.0)
     grid("on")
     if SaveFig
@@ -1046,16 +1046,16 @@ function CompareTMS_SmoothVortex(StudyCase::String;
         right   = 0.4
         )
     colorv                      = PyPlotColors("jet2", length(SCvv1))
-    leg                         = String[]
+#     leg                         = String[]
     for ii=1:length(SCvv1)
         loglog(CFLvv1[ii], errvv1[ii], color=colorv[ii], linewidth=0.5, linestyle="solid", marker="s", markersize=3.5)
 #         loglog(Deltatvv1[ii], etavv1[ii], color=colorv[ii], linewidth=0.5, linestyle="dashed", marker="s", markersize=3.5)
 
-        push!(leg,TIMethodNamevv1[ii][1])
+#         push!(leg,TIMethodNamevv1[ii][1])
     end
     xlabel(latexstring(GetString("CFLmax")))
     ylabel(latexstring(GetString("errL2L2")))
-    legend(leg, loc="best", fontsize=6)
+#     legend(leg, loc="best", fontsize=6)
     tick_params(axis="both", which="both", labelsize=7.0)
     grid("on")
     if SaveFig
@@ -1071,16 +1071,15 @@ end
 
 function TableResults_TMS_SmoothVortex(StudyCase::String)
 
-    vbles       = [ "TIMethodName", "TolS_max", "Deltat0", "errL2L2", "EOC_Deltat0_errL2L2", "tCPU", "CFLmax" ]
+    vbles       = [ "TIMethodName", "TolS_max", "NDOF", "hp", "Deltat0", "errL2L2", "EOC_Deltat0_errL2L2", "tCPU", "CFLmax" ]
 
-    formats     = [ "%s",          "%.2E",
-                    "%.2E",     "%.2E",
+    formats     = ["%s",           "%.2E",           "%d",       "%.2E",   "%.2E",     "%.2E",
                    "%.2f",         "%.1f",     "%.2E" ]
 
-    header      = string(" TMS & \$\\text{Tol}_{S}\$ ",
+    header      = string(" Scheme & \$\\TolSmax\$ & \$\\NDOF\$ & \$h/p\$",
                          "& \$\\tau\$",
                          "& \$e_{ST}\$ & \$\\EOC\$ & \$t_{CPU}[s]\$",
-                         " & \$\\CFL^{max}\$",
+                         " & \$\\CFL^{\\max}\$",
                          "\\\\")
 
     #------------------------------------------------------------
